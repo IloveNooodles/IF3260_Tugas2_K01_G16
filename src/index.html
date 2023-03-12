@@ -1,13 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
-    k
-    <title>Welcome to GRAFKOM</title>
-  </head>
-  <body></body>
-  <script src="index.js"></script>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="style.css" />
+        <title>3D WebGL Hollow Object</title>
+    </head>
+    <body>
+        <header>3D WebGL Hollow Object</header>
+        <div class="container">
+            <div class="tools-container">
+                <h1>Tools</h1>
+                <h2>Projection</h2>
+                <div class="projection" id="projection">
+                    <input
+                        type="radio"
+                        id="orthographic"
+                        name="projection"
+                        value="orthographic"
+                        checked
+                    />
+                    <label for="cube">Orthographic</label>
+                    <input
+                        type="radio"
+                        id="oblique"
+                        name="shape"
+                        value="oblique"
+                    />
+                    <label for="sphere">Oblique</label>
+                    <input
+                        type="radio"
+                        id="perspective"
+                        name="shape"
+                        value="perspective"
+                    />
+                    <label for="cylinder">Perspective</label>
+                </div>
+                <h2>Transform</h2>
+                <label for="translate">Translate</label>
+                <div class="translate">
+                    <label for="translateX">X</label>
+                    <input type="range" id="translateX" />
+                    <label for="translateY">Y</label>
+                    <input type="range" id="translateY" />
+                    <label for="translateZ">Z</label>
+                    <input type="range" id="translateZ" />
+                </div>
+                <label for="rotate">Rotate</label>
+                <div class="rotate">
+                    <label for="rotateX">X</label>
+                    <input type="range" id="rotateX" />
+                    <label for="rotateY">Y</label>
+                    <input type="range" id="rotateY" />
+                    <label for="rotateZ">Z</label>
+                    <input type="range" id="rotateZ" />
+                </div>
+                <label for="scale">Scale</label>
+                <div class="scale">
+                    <label for="scaleX">X</label>
+                    <input type="range" id="scaleX" />
+                    <label for="scaleY">Y</label>
+                    <input type="range" id="scaleY" />
+                    <label for="scaleZ">Z</label>
+                    <input type="range" id="scaleZ" />
+                </div>
+                <h2>Camera</h2>
+                <label for="camera-pos">Camera Position</label>
+                <div class="camera-pos">
+                    <label for="cameraX">X</label>
+                    <input type="range" id="cameraX" />
+                    <label for="cameraY">Y</label>
+                    <input type="range" id="cameraY" />
+                    <label for="cameraZ">Z</label>
+                    <input type="range" id="cameraZ" />
+                </div>
+                <label for="camera-lookat">Camera LookAt</label>
+                <div class="camera-lookat">
+                    <label for="lookatX">X</label>
+                    <input type="range" id="lookatX" />
+                    <label for="lookatY">Y</label>
+                    <input type="range" id="lookatY" />
+                    <label for="lookatZ">Z</label>
+                    <input type="range" id="lookatZ" />
+                </div>
+                <h2>Utilities</h2>
+                <div class="save-load">
+                    <input type="file" id="file" />
+                    <button id="save">Save</button>
+                </div>
+                <div class="color">
+                    <label for="color">Color: </label>
+                    <input type="color" id="color" />
+                </div>
+                <div class="shading">
+                    <label for="lighting">Lighting</label>
+                    <input type="checkbox" id="lighting" />
+                </div>
+                <button id="reset">Reset</button>
+            </div>
+            <div class="canvas-container">
+                <canvas id="canvas" width="720" height="720"></canvas>
+            </div>
+        </div>
+    </body>
+    <script id="vertex-shader-3d" type="x-shader/x-vertex">
+        attribute vec3 coordinates;
+        uniform float fudgeFactor;
+        uniform mat4 transformationMatrix;
+        uniform mat4 uProjectionMatrix;
+        varying float colorFactor;
+
+        void main(void) {
+            vec4 transformedPos = transformationMatrix * vec4(coordinates.xy, coordinates.z * -1.0, 1.0);
+            vec4 projectedPos   = uProjectionMatrix * transformedPos;
+            if (fudgeFactor < 0.01)
+                gl_Position = projectedPos;
+            else {
+                float zDivider = 2.0 + projectedPos.z * fudgeFactor;
+                gl_Position = vec4(projectedPos.xy / zDivider, projectedPos.zw);
+            }
+            colorFactor = min(max((1.0 - transformedPos.z) / 2.0, 0.0), 1.0);
+        }
+    </script>
+
+    <script id="fragment-shader-3d-lighting" type="x-shader/x-fragment">
+        precision mediump float;
+        uniform vec3 userColor;
+        varying float colorFactor;
+
+        void main(void) {
+            gl_FragColor = vec4(userColor * colorFactor, 1.0);
+        }
+    </script>
+
+    <script id="fragment-shader-3d-nolighting" type="x-shader/x-fragment">
+        precision mediump float;
+        uniform vec3 userColor;
+        varying float colorFactor;
+
+        void main(void) {
+            gl_FragColor = vec4(userColor, 1.0);
+        }
+    </script>
+    <script src="index.js"></script>
 </html>
