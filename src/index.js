@@ -41,11 +41,17 @@ void main(void) {
 
 /* ======= Global object ======= */
 var state;
+setDefaultState();
 
 function setDefaultState() {
   /* Setup default state for webgl canvas */
   state = {
-    model: {},
+    model: {
+      vertices: [],
+      faces: [],
+      normals: [],
+      uvs: [],
+    },
     transform: {
       translate: [0, 0, 0], // x, y, z
       rotate: [0, 0, (Math.PI / 180) * 45], // x, y, z
@@ -59,20 +65,40 @@ function setDefaultState() {
 
 /* ======= Get Document Object Model ======= */
 const canvas = document.getElementById("canvas");
-const reset = document.getElementById("reset");
 const projectionRadio = document.getElementsByName("projection");
-const lightingCheckbox = document.getElementById("lighting");
+const modelInput = document.getElementById("objFile");
+const buttonSave = document.getElementById("save");
 const colorPicker = document.getElementById("color-picker");
+const lightingCheckbox = document.getElementById("lighting");
+const reset = document.getElementById("reset");
 
 /* ======= Event Listener ======= */
-reset.addEventListener("click", () => {
-  clear();
-});
-
 projectionRadio.forEach((radio) => {
   radio.addEventListener("change", () => {
     state.projection = radio.value;
   });
+});
+
+modelInput.addEventListener("change", () => {
+  const file = modelInput.files[0];
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    reset.click();
+    const text = e.target.result;
+    state.model = objParser(text);
+    console.log(state.model);
+  };
+  reader.readAsText(file);
+});
+
+buttonSave.addEventListener("click", () => {
+  const obj = createObjFile(state.model);
+  const blob = new Blob([obj], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "model.obj";
+  link.click();
 });
 
 colorPicker.addEventListener("change", () => {
@@ -90,6 +116,11 @@ lightingCheckbox.addEventListener("change", () => {
   state.lighting = lightingCheckbox.checked;
 });
 
+reset.addEventListener("click", () => {
+  setDefaultState();
+  clear();
+});
+
 /* ======= WebGL Functions ======= */
 const gl = canvas.getContext("webgl");
 const program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d);
@@ -98,7 +129,6 @@ window.onload = function () {
   if (!gl) {
     alert("WebGL not supported");
   }
-  setDefaultState();
   clear();
 };
 
