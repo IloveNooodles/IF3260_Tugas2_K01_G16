@@ -1,20 +1,20 @@
 /* ======= Shader object ======= */
 const vertex_shader_3d = `
-attribute vec3 vPosition;
+attribute vec3 aPosition;
 uniform float fudgeFactor;
-uniform mat4 transformationMatrix;
+uniform mat4 uTransformationMatrix;
 uniform mat4 uProjectionMatrix;
 varying float colorFactor;
 
 void main(void) {
-    vec4 transformedPos = transformationMatrix * vec4(vPosition.xy, vPosition.z * -1.0, 1.0);
+    vec4 transformedPos = uTransformationMatrix * vec4(aPosition, 1.0);
     vec4 projectedPos   = uProjectionMatrix * transformedPos;
     if (fudgeFactor < 0.01)
         gl_Position = projectedPos;
     else {
         float zDivider = 1.0 + projectedPos.z * fudgeFactor;
         gl_Position = vec4(projectedPos.xy / zDivider, projectedPos.zw);
-    }
+    }    
     colorFactor = min(max((1.0 - transformedPos.z) / 2.0, 0.0), 1.0);
 }
 `;

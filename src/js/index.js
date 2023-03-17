@@ -6,20 +6,29 @@ function setDefaultState() {
   /* Setup default state for webgl canvas */
   state = {
     model: {
-      vertices: [],
-      faces: [],
+      vertices: [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 0],
+      ],
+      faces: [[0, 1, 2]],
       normals: [], // not used
       uvs: [], // not used
     },
     transform: {
-      translate: [0, 0, -300], // x, y, z
-      rotate: [0, 0, (Math.PI / 180) * 45], // x, y, z
+      translate: [0, 0, 0], // x, y, z
+      rotate: [0, 0, 0], // x, y, z
       scale: [1, 1, 1], // x, y, z
     },
     projection: "perspective", // orthographic, oblique, or perspective
+    fudgeFactor: 0.0, // perspective projection
     lighting: true,
     pickedColor: [0.0, 0.0, 0.0], // r, g, b, a
   };
+
+  if (state.projection === "perspective") {
+    state.transform.translate[2] = -5 + 100 / 100;
+  }
 }
 
 /* ======= Get Document Object Model ======= */
@@ -31,7 +40,16 @@ const colorPicker = document.getElementById("color-picker");
 const lightingCheckbox = document.getElementById("lighting");
 const reset = document.getElementById("reset");
 
+/* ======= Transform Sliders ======= */
+const rangeTranslateX = document.getElementById("translate-x");
+const rangeTranslateY = document.getElementById("translate-y");
 const rangeTranslateZ = document.getElementById("translate-z");
+
+const rangeRotateX = document.getElementById("rotate-x");
+const rangeRotateY = document.getElementById("rotate-y");
+const rangeRotateZ = document.getElementById("rotate-z");
+
+const rangeFOV = document.getElementById("fov");
 
 /* ======= Event Listener ======= */
 projectionRadio.forEach((radio) => {
@@ -45,14 +63,15 @@ modelInput.addEventListener("change", () => {
   const file = modelInput.files[0];
   const reader = new FileReader();
   reader.onload = function (e) {
+    const text = e.target.result;
+    const color = state.pickedColor;
     setDefaultState();
     clear();
-    const text = e.target.result;
     state.model = objParser(text);
-    console.log(state.model);
+    state.pickedColor = color;
+    render();
   };
   reader.readAsText(file);
-  render();
 });
 
 buttonSave.addEventListener("click", () => {
@@ -73,6 +92,7 @@ colorPicker.addEventListener("change", () => {
     parseInt(color.substring(3, 5), 16) / 255,
     parseInt(color.substring(5, 7), 16) / 255,
   ];
+  render();
 });
 
 lightingCheckbox.addEventListener("change", () => {
@@ -82,32 +102,68 @@ lightingCheckbox.addEventListener("change", () => {
   } else {
     program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d_no_lighting);
   }
-  console.log("lighting: " + state.lighting);
   render();
 });
 
 reset.addEventListener("click", () => {
   setDefaultState();
   modelInput.value = "";
-  console.log(state);
   clear();
 });
 
+rangeTranslateX.addEventListener("input", () => {
+  state.transform.translate[0] = -1 + (2 * rangeTranslateX.value) / 100;
+  render();
+});
+
+rangeTranslateY.addEventListener("input", () => {
+  state.transform.translate[1] = -1 + (2 * rangeTranslateY.value) / 100;
+  render();
+});
+
 rangeTranslateZ.addEventListener("input", () => {
-  state.transform.translate[2] = -1 + (2 * rangeTranslateZ.value) / 100;
-  console.log(state.transform.translate);
+  if (state.projection === "perspective") {
+    state.transform.translate[2] = -5 + (2 * rangeTranslateZ.value) / 100;
+  } else {
+    state.transform.translate[2] = -1 + (2 * rangeTranslateZ.value) / 100;
+  }
+  render();
+});
+
+rangeRotateX.addEventListener("input", () => {
+  // rotate -360 to 360
+  state.transform.rotate[0] = -1 + (2 * rangeRotateX.value * 2 * Math.PI) / 100;
+  render();
+});
+
+rangeRotateY.addEventListener("input", () => {
+  state.transform.rotate[1] = -1 + (2 * rangeRotateY.value * 2 * Math.PI) / 100;
+  render();
+});
+
+rangeRotateZ.addEventListener("input", () => {
+  state.transform.rotate[2] = -1 + (2 * rangeRotateZ.value * 2 * Math.PI) / 100;
+  render();
+});
+
+rangeFOV.addEventListener("input", () => {
+  state.fudgeFactor = rangeFOV.value / 100;
+  console.log(state.fudgeFactor);
   render();
 });
 
 /* ======= WebGL Functions ======= */
 const gl = canvas.getContext("webgl");
-const program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d_no_lighting);
+var program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d_no_lighting);
 
 window.onload = function () {
   if (!gl) {
     alert("WebGL not supported");
   }
-  clear();
+  rangeFOV.value = 0;
+  colorPicker.value = "#808080";
+  state.pickedColor = [0.5, 0.5, 0.5];
+  render();
 };
 
 function clear() {
@@ -123,43 +179,42 @@ function render() {
   clear();
   gl.enable(gl.CULL_FACE);
   gl.enable(gl.DEPTH_TEST);
+  gl.useProgram(program);
 
   const geometry = setGeometry(gl, state.model);
   const transform = setTransform(state.transform);
   const projection = setProjection(state.projection);
 
-  gl.useProgram(program);
+  var aPosition = gl.getAttribLocation(program, "aPosition");
+  gl.enableVertexAttribArray(aPosition);
+  gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
 
-  const vPosition = gl.getAttribLocation(program, "vPosition");
-  gl.vertexAttribPointer(vPosition, 3, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(vPosition);
+  var fudgeFactor = gl.getUniformLocation(program, "fudgeFactor");
+  gl.uniform1f(fudgeFactor, state.fudgeFactor);
 
-  const fudgeFactor = gl.getUniformLocation(program, "fudgeFactor");
-  if (state.projection === "perspective") {
-    gl.uniform1f(fudgeFactor, 1.2);
-  } else {
-    gl.uniform1f(fudgeFactor, 1.0);
-  }
-
-  const transformationMatrix = gl.getUniformLocation(program, "transformationMatrix");
+  var transformationMatrix = gl.getUniformLocation(program, "uTransformationMatrix");
   gl.uniformMatrix4fv(transformationMatrix, false, transform);
 
-  const uProjectionMatrix = gl.getUniformLocation(program, "uProjectionMatrix");
+  var uProjectionMatrix = gl.getUniformLocation(program, "uProjectionMatrix");
   gl.uniformMatrix4fv(uProjectionMatrix, false, projection);
 
-  const userColor = gl.getUniformLocation(program, "userColor");
+  var userColor = gl.getUniformLocation(program, "userColor");
   gl.uniform3fv(userColor, state.pickedColor);
 
-  gl.drawArrays(gl.TRIANGLES, geometry.numFaces, 0);
+  // console.log(state.model.vertices);
+  // console.log(state.model.faces);
+  gl.drawElements(gl.TRIANGLES, geometry.numFaces, gl.UNSIGNED_SHORT, 0);
 
   // requestAnimationFrame(render);
 }
 
 function setGeometry(gl, model) {
   /* Setup geometry for webgl canvas */
-  const vertices = new Float32Array(model.vertices);
-  const faces = new Uint16Array(model.faces);
+  const vertices = new Float32Array(model.vertices.flat(1));
+  // all faces elements -1 to convert to 0 index
+  const faces = new Uint16Array(model.faces.flat(1).map((x) => x - 1));
 
+  // console.log(vertices);
   const vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
@@ -168,6 +223,7 @@ function setGeometry(gl, model) {
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, faceBuffer);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, faces, gl.STATIC_DRAW);
 
+  console.log(vertices, faces);
   return {
     vertexBuffer,
     faceBuffer,
