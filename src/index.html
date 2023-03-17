@@ -15,59 +15,71 @@
         <h1>Tools</h1>
         <h2>Projection</h2>
         <div class="projection" id="projection">
-          <input type="radio" id="orthographic" name="projection" value="orthographic" checked />
+          <input type="radio" id="orthographic" name="projection" value="orthographic" />
           <label for="orthographic">Orthographic</label>
           <input type="radio" id="oblique" name="projection" value="oblique" />
           <label for="oblique">Oblique</label>
-          <input type="radio" id="perspective" name="projection" value="perspective" />
+          <input type="radio" id="perspective" name="projection" value="perspective" checked />
           <label for="perspective">Perspective</label>
         </div>
         <h2>Transform</h2>
         <label for="translate">Translate</label>
         <div class="translate">
           <label for="translateX">X</label>
-          <input type="range" id="translateX" />
+          <input type="range" id="translate-x" />
           <label for="translateY">Y</label>
-          <input type="range" id="translateY" />
+          <input type="range" id="translate-y" />
           <label for="translateZ">Z</label>
-          <input type="range" id="translateZ" />
+          <input type="range" id="translate-z" />
         </div>
         <label for="rotate">Rotate</label>
         <div class="rotate">
           <label for="rotateX">X</label>
-          <input type="range" id="rotateX" />
+          <input type="range" id="rotate-x" />
           <label for="rotateY">Y</label>
-          <input type="range" id="rotateY" />
+          <input type="range" id="rotate-y" />
           <label for="rotateZ">Z</label>
-          <input type="range" id="rotateZ" />
+          <input type="range" id="rotate-z" />
         </div>
         <label for="scale">Scale</label>
         <div class="scale">
           <label for="scaleX">X</label>
-          <input type="range" id="scaleX" />
+          <input type="range" id="scale-x" />
           <label for="scaleY">Y</label>
-          <input type="range" id="scaleY" />
+          <input type="range" id="scale-y" />
           <label for="scaleZ">Z</label>
-          <input type="range" id="scaleZ" />
+          <input type="range" id="scale-z" />
         </div>
         <h2>Camera</h2>
         <label for="camera-pos">Camera Position</label>
         <div class="camera-pos">
           <label for="cameraX">X</label>
-          <input type="range" id="cameraX" />
+          <input type="range" id="camera-x" />
           <label for="cameraY">Y</label>
-          <input type="range" id="cameraY" />
+          <input type="range" id="camera-y" />
           <label for="cameraZ">Z</label>
-          <input type="range" id="cameraZ" />
+          <input type="range" id="camera-z" />
         </div>
         <label for="camera-lookat">Camera LookAt</label>
         <div class="camera-lookat">
           <label for="lookatX">X</label>
-          <input type="range" id="lookatX" />
+          <input type="range" id="lookat-x" />
           <label for="lookatY">Y</label>
-          <input type="range" id="lookatY" />
+          <input type="range" id="lookat-y" />
           <label for="lookatZ">Z</label>
-          <input type="range" id="lookatZ" />
+          <input type="range" id="lookat-z" />
+        </div>
+        <label for="camera-fov">FOV</label>
+        <div class="camera-fov">
+          <input type="range" id="fov" />
+        </div>
+        <label for="camera-near">Near</label>
+        <div class="camera-near">
+          <input type="range" id="near" />
+        </div>
+        <label for="camera-far">Far</label>
+        <div class="camera-far">
+          <input type="range" id="far" />
         </div>
         <h2>Utilities</h2>
         <div class="save-load">
@@ -90,6 +102,9 @@
       </div>
     </div>
   </body>
-  <script src="index.js"></script>
-  <script src="objHandler.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/matrices.js"></script>
+  <script src="js/objHandler.js"></script>
+  <script src="js/webgl.js"></script>
+  <script src="js/index.js"></script>
 </html>

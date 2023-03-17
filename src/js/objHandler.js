@@ -1,3 +1,5 @@
+/* ======= Object Handler ======= */
+
 function objParser(text) {
   const lines = text.split("\n");
   const vertices = [];
