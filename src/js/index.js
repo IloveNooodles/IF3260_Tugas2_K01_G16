@@ -5,26 +5,27 @@ setDefaultState();
 function setDefaultState() {
   /* Setup default state for webgl canvas */
   state = {
-    model: {
-      vertices: [
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 0],
-        [1, 1, 0],
-      ],
-      // Faces are 1 index based
-      faces: [
-        [1, 2, 3],
-        [1, 2, 4],
-      ],
+    model: f,
+    // model: {
+    //   vertices: [
+    //     [1, 0, 0],
+    //     [0, 1, 0],
+    //     [0, 0, 0],
+    //     [1, 1, 0],
+    //   ],
+    //   // Faces are 1 index based
+    //   faces: [
+    //     [1, 2, 3],
+    //     [2, 4, 3],
+    //   ],
 
-      colors: [
-        [1, 0.5, 0.2],
-        [0.4, 1, 1],
-      ],
-      normals: [], // not used
-      uvs: [], // not used
-    },
+    //   colors: [
+    //     [1, 0.2, 0.1],
+    //     [0.4, 1, 1],
+    //   ],
+    //   normals: [], // not used
+    //   uvs: [], // not used
+    // },
     transform: {
       translate: [0, 0, 0], // x, y, z
       rotate: [0, 0, 0], // x, y, z
@@ -39,7 +40,7 @@ function setDefaultState() {
   if (state.projection === "perspective") {
     state.transform.translate[2] = -5 + 100 / 100;
   } else if (state.projection == "orthographic") {
-    //?
+    state.transform.translate[2] = -1;
   }
 }
 
@@ -223,18 +224,15 @@ function render() {
   gl.useProgram(program);
 
   /* get all the necessary object */
-  const geometry = setGeometry(gl, state.model, true);
+  const geometry = setGeometry(gl, state.model, state.lighting);
   const transform = setTransform(state.transform);
   const projection = setProjection(state.projection);
 
+  console.log(state.model);
   /* get WebGl attribute and location */
   var aPosition = gl.getAttribLocation(program, "aPosition");
   gl.enableVertexAttribArray(aPosition);
   gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
-
-  var vertColor = gl.getAttribLocation(program, "aColor");
-  gl.enableVertexAttribArray(vertColor);
-  gl.vertexAttribPointer(vertColor, 3, gl.FLOAT, false, 0, 0);
 
   var fudgeFactor = gl.getUniformLocation(program, "fudgeFactor");
   gl.uniform1f(fudgeFactor, state.fudgeFactor);
@@ -243,22 +241,30 @@ function render() {
     program,
     "uTransformationMatrix"
   );
+
+  var viewMatrix = gl.getUniformLocation(program, "uViewMatrix");
+
   gl.uniformMatrix4fv(transformationMatrix, false, transform);
 
   var uProjectionMatrix = gl.getUniformLocation(program, "uProjectionMatrix");
   gl.uniformMatrix4fv(uProjectionMatrix, false, projection);
 
-  var userColor = gl.getUniformLocation(program, "userColor");
-  gl.uniform3fv(userColor, state.pickedColor);
+  if (state.lighting) {
+    var userColor = gl.getUniformLocation(program, "userColor");
+    gl.uniform3fv(userColor, state.pickedColor);
+  } else {
+    setColor(gl, state.model);
+    var vertColor = gl.getAttribLocation(program, "aColor");
+    gl.enableVertexAttribArray(vertColor);
+    gl.vertexAttribPointer(vertColor, 3, gl.FLOAT, false, 0, 0);
+  }
 
-  // console.log(state.model.vertices);
-  // console.log(state.model.faces);
   gl.drawElements(gl.TRIANGLES, geometry.numFaces, gl.UNSIGNED_SHORT, 0);
 
   // requestAnimationFrame(render);
 }
 
-function setGeometry(gl, model, isColor = false) {
+function setGeometry(gl, model) {
   /* Setup geometry for webgl canvas */
   const vertices = new Float32Array(model.vertices.flat(1));
   // all faces are 1 based index. add elements -1 to convert to 0 index
@@ -272,26 +278,19 @@ function setGeometry(gl, model, isColor = false) {
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, faceBuffer);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, faces, gl.STATIC_DRAW);
 
-  if (isColor) {
-    const colorBuffer = gl.createBuffer();
-    const colors = new Float32Array(model.colors.flat(1));
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
-
-    return {
-      vertexBuffer,
-      faceBuffer,
-      colorBuffer,
-      numFaces: faces.length,
-    };
-  }
-
   console.log(vertices, faces);
   return {
     vertexBuffer,
     faceBuffer,
     numFaces: faces.length,
   };
+}
+
+function setColor(gl, model) {
+  const colorBuffer = gl.createBuffer();
+  const colors = new Float32Array(model.colors.flat(1));
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
 }
 
 function setTransform(transform) {
@@ -332,9 +331,7 @@ function setProjection(projection) {
   const bottom = gl.canvas.clientHeight;
 
   if (projection === "orthographic") {
-    let oFar = -400;
-    let oNear = 400;
-    return matrices.orthographic(left, right, bottom, top, oNear, oFar);
+    return matrices.orthographic(left, right, bottom, top, near, far);
   } else if (projection === "oblique") {
     // return matrices.oblique(-1, 1, -1, 1, near, far);
   } else if (projection === "perspective") {
