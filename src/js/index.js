@@ -10,8 +10,18 @@ function setDefaultState() {
         [1, 0, 0],
         [0, 1, 0],
         [0, 0, 0],
+        [1, 1, 0],
       ],
-      faces: [[0, 1, 2]],
+      // Faces are 1 index based
+      faces: [
+        [1, 2, 3],
+        [1, 2, 4],
+      ],
+
+      colors: [
+        [1, 0.5, 0.2],
+        [0.4, 1, 1],
+      ],
       normals: [], // not used
       uvs: [], // not used
     },
@@ -22,7 +32,7 @@ function setDefaultState() {
     },
     projection: "perspective", // orthographic, oblique, or perspective
     fudgeFactor: 0.0, // perspective projection
-    lighting: true,
+    lighting: false,
     pickedColor: [0.0, 0.0, 0.0], // r, g, b, a
   };
 
@@ -86,6 +96,7 @@ buttonSave.addEventListener("click", () => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
+  // TODO change this
   link.download = "model.obj";
   link.click();
 });
@@ -140,8 +151,8 @@ rangeTranslateZ.addEventListener("input", () => {
   render();
 });
 
+/* rotate from -360 to 360 */
 rangeRotateX.addEventListener("input", () => {
-  // rotate -360 to 360
   state.transform.rotate[0] = -1 + (2 * rangeRotateX.value * 2 * Math.PI) / 100;
   render();
 });
@@ -156,7 +167,7 @@ rangeRotateZ.addEventListener("input", () => {
   render();
 });
 
-/* scale from 1 to 5 */
+/* scale from -5 to 5 */
 scaleX.addEventListener("input", () => {
   state.transform.scale[0] = scaleX.value / 20;
   render();
@@ -203,21 +214,27 @@ function clear() {
 }
 
 function render() {
-  // console.log(state.model);
   /* Render loop for webgl canvas */
+  /* Setup */
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   clear();
   gl.enable(gl.CULL_FACE);
   gl.enable(gl.DEPTH_TEST);
   gl.useProgram(program);
 
-  const geometry = setGeometry(gl, state.model);
+  /* get all the necessary object */
+  const geometry = setGeometry(gl, state.model, true);
   const transform = setTransform(state.transform);
   const projection = setProjection(state.projection);
 
+  /* get WebGl attribute and location */
   var aPosition = gl.getAttribLocation(program, "aPosition");
   gl.enableVertexAttribArray(aPosition);
   gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
+
+  var vertColor = gl.getAttribLocation(program, "aColor");
+  gl.enableVertexAttribArray(vertColor);
+  gl.vertexAttribPointer(vertColor, 3, gl.FLOAT, false, 0, 0);
 
   var fudgeFactor = gl.getUniformLocation(program, "fudgeFactor");
   gl.uniform1f(fudgeFactor, state.fudgeFactor);
@@ -241,13 +258,12 @@ function render() {
   // requestAnimationFrame(render);
 }
 
-function setGeometry(gl, model) {
+function setGeometry(gl, model, isColor = false) {
   /* Setup geometry for webgl canvas */
   const vertices = new Float32Array(model.vertices.flat(1));
-  // all faces elements -1 to convert to 0 index
+  // all faces are 1 based index. add elements -1 to convert to 0 index
   const faces = new Uint16Array(model.faces.flat(1).map((x) => x - 1));
 
-  // console.log(vertices);
   const vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
@@ -255,6 +271,20 @@ function setGeometry(gl, model) {
   const faceBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, faceBuffer);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, faces, gl.STATIC_DRAW);
+
+  if (isColor) {
+    const colorBuffer = gl.createBuffer();
+    const colors = new Float32Array(model.colors.flat(1));
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
+
+    return {
+      vertexBuffer,
+      faceBuffer,
+      colorBuffer,
+      numFaces: faces.length,
+    };
+  }
 
   console.log(vertices, faces);
   return {

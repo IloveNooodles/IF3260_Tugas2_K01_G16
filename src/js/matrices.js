@@ -113,7 +113,6 @@ var matrices = {
 
   /* projection */
   orthographic: function (left, right, bottom, top, near, far) {
-    // TODO
     return [
       2 / (right - left), 0, 0, 0,
       0, 2 / (top - bottom), 0, 0,
