@@ -51,6 +51,10 @@ const rangeRotateX = document.getElementById("rotate-x");
 const rangeRotateY = document.getElementById("rotate-y");
 const rangeRotateZ = document.getElementById("rotate-z");
 
+const scaleX = document.getElementById("scale-x");
+const scaleY = document.getElementById("scale-y");
+const scaleZ = document.getElementById("scale-z");
+
 const rangeFOV = document.getElementById("fov");
 
 /* ======= Event Listener ======= */
@@ -149,6 +153,22 @@ rangeRotateY.addEventListener("input", () => {
 
 rangeRotateZ.addEventListener("input", () => {
   state.transform.rotate[2] = -1 + (2 * rangeRotateZ.value * 2 * Math.PI) / 100;
+  render();
+});
+
+/* scale from 1 to 5 */
+scaleX.addEventListener("input", () => {
+  state.transform.scale[0] = scaleX.value / 20;
+  render();
+});
+
+scaleY.addEventListener("input", () => {
+  state.transform.scale[1] = scaleY.value / 20;
+  render();
+});
+
+scaleZ.addEventListener("input", () => {
+  state.transform.scale[2] = scaleZ.value / 20;
   render();
 });
 
