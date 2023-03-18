@@ -28,6 +28,8 @@ function setDefaultState() {
 
   if (state.projection === "perspective") {
     state.transform.translate[2] = -5 + 100 / 100;
+  } else if (state.projection == "orthographic") {
+    //?
   }
 }
 
@@ -100,7 +102,11 @@ lightingCheckbox.addEventListener("change", () => {
   if (state.lighting) {
     program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d);
   } else {
-    program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d_no_lighting);
+    program = createShaderProgram(
+      gl,
+      vertex_shader_3d,
+      fragment_shader_3d_no_lighting
+    );
   }
   render();
 });
@@ -154,7 +160,11 @@ rangeFOV.addEventListener("input", () => {
 
 /* ======= WebGL Functions ======= */
 const gl = canvas.getContext("webgl");
-var program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d_no_lighting);
+var program = createShaderProgram(
+  gl,
+  vertex_shader_3d,
+  fragment_shader_3d_no_lighting
+);
 
 window.onload = function () {
   if (!gl) {
@@ -192,7 +202,10 @@ function render() {
   var fudgeFactor = gl.getUniformLocation(program, "fudgeFactor");
   gl.uniform1f(fudgeFactor, state.fudgeFactor);
 
-  var transformationMatrix = gl.getUniformLocation(program, "uTransformationMatrix");
+  var transformationMatrix = gl.getUniformLocation(
+    program,
+    "uTransformationMatrix"
+  );
   gl.uniformMatrix4fv(transformationMatrix, false, transform);
 
   var uProjectionMatrix = gl.getUniformLocation(program, "uProjectionMatrix");
@@ -238,9 +251,18 @@ function setTransform(transform) {
     transform.translate[1],
     transform.translate[2]
   );
-  const matrixXRotate = matrices.multiply(matrixTranslate, matrices.xRotate(transform.rotate[0]));
-  const matrixYRotate = matrices.multiply(matrixXRotate, matrices.yRotate(transform.rotate[1]));
-  const matrixZRotate = matrices.multiply(matrixYRotate, matrices.zRotate(transform.rotate[2]));
+  const matrixXRotate = matrices.multiply(
+    matrixTranslate,
+    matrices.xRotate(transform.rotate[0])
+  );
+  const matrixYRotate = matrices.multiply(
+    matrixXRotate,
+    matrices.yRotate(transform.rotate[1])
+  );
+  const matrixZRotate = matrices.multiply(
+    matrixYRotate,
+    matrices.zRotate(transform.rotate[2])
+  );
   const matrixScale = matrices.multiply(
     matrixZRotate,
     matrices.scale(transform.scale[0], transform.scale[1], transform.scale[2])
@@ -254,9 +276,15 @@ function setProjection(projection) {
   const near = 0.1;
   const far = 1000.0;
   const fovy = (Math.PI / 180) * 45;
+  const left = 0;
+  const top = 0;
+  const right = gl.canvas.clientWidth;
+  const bottom = gl.canvas.clientHeight;
 
   if (projection === "orthographic") {
-    // return matrices.orthographic(-1, 1, -1, 1, near, far);
+    let oFar = -400;
+    let oNear = 400;
+    return matrices.orthographic(left, right, bottom, top, oNear, oFar);
   } else if (projection === "oblique") {
     // return matrices.oblique(-1, 1, -1, 1, near, far);
   } else if (projection === "perspective") {
