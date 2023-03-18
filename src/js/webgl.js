@@ -1,6 +1,8 @@
 /* ======= Shader object ======= */
 const vertex_shader_3d = `
 attribute vec3 aPosition;
+attribute vec3 aColor;
+varying vec3 fragColor;
 uniform float fudgeFactor;
 uniform mat4 uTransformationMatrix;
 uniform mat4 uProjectionMatrix;
@@ -14,7 +16,8 @@ void main(void) {
     else {
         float zDivider = 1.0 + projectedPos.z * fudgeFactor;
         gl_Position = vec4(projectedPos.xy / zDivider, projectedPos.zw);
-    }    
+    }
+    fragColor = aColor;    
     colorFactor = min(max((1.0 - transformedPos.z) / 2.0, 0.0), 1.0);
 }
 `;
@@ -31,11 +34,10 @@ void main(void) {
 
 const fragment_shader_3d_no_lighting = `
 precision mediump float;
-uniform vec3 userColor;
-varying float colorFactor;
+varying vec3 fragColor;
 
 void main(void) {
-    gl_FragColor = vec4(userColor, 1.0);
+    gl_FragColor = vec4(fragColor, 1.0);
 }
 `;
 
@@ -48,7 +50,10 @@ function loadShader(gl, type, input) {
   gl.compileShader(shader);
 
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    console.error("ERROR compiling vertex shader!", gl.getShaderInfoLog(vertexShader));
+    console.error(
+      "ERROR compiling vertex shader!",
+      gl.getShaderInfoLog(vertexShader)
+    );
     return null;
   }
 

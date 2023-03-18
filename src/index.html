@@ -15,11 +15,22 @@
         <h1>Tools</h1>
         <h2>Projection</h2>
         <div class="projection" id="projection">
-          <input type="radio" id="orthographic" name="projection" value="orthographic" />
+          <input
+            type="radio"
+            id="orthographic"
+            name="projection"
+            value="orthographic"
+          />
           <label for="orthographic">Orthographic</label>
           <input type="radio" id="oblique" name="projection" value="oblique" />
           <label for="oblique">Oblique</label>
-          <input type="radio" id="perspective" name="projection" value="perspective" checked />
+          <input
+            type="radio"
+            id="perspective"
+            name="projection"
+            value="perspective"
+            checked
+          />
           <label for="perspective">Perspective</label>
         </div>
         <h2>Transform</h2>
@@ -44,11 +55,11 @@
         <label for="scale">Scale</label>
         <div class="scale">
           <label for="scaleX">X</label>
-          <input type="range" id="scale-x" />
+          <input type="range" id="scale-x" min="-100" max="100" value="0" />
           <label for="scaleY">Y</label>
-          <input type="range" id="scale-y" />
+          <input type="range" id="scale-y" min="-100" max="100" value="0" />
           <label for="scaleZ">Z</label>
-          <input type="range" id="scale-z" />
+          <input type="range" id="scale-z" min="-100" max="100" value="0" />
         </div>
         <h2>Camera</h2>
         <label for="camera-pos">Camera Position</label>

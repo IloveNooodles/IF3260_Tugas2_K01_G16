@@ -113,37 +113,70 @@ var matrices = {
   },
   /* transformation */
   translate: function (x, y, z) {
-    return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1];
+    return [
+      1, 0, 0, 0, 
+      0, 1, 0, 0, 
+      0, 0, 1, 0, 
+      x, y, z, 1
+    ];
   },
 
   xRotate: function (angleInRadians) {
     var c = Math.cos(angleInRadians);
     var s = Math.sin(angleInRadians);
 
-    return [1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1];
+    return [
+      1, 0, 0, 0, 
+      0, c, s, 0, 
+      0, -s, c, 0, 
+      0, 0, 0, 1
+    ];
   },
 
   yRotate: function (angleInRadians) {
     var c = Math.cos(angleInRadians);
     var s = Math.sin(angleInRadians);
 
-    return [c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1];
+    return [
+      c, 0, -s, 0, 
+      0, 1, 0, 0, 
+      s, 0, c, 0, 
+      0, 0, 0, 1
+    ];
   },
 
   zRotate: function (angleInRadians) {
     var c = Math.cos(angleInRadians);
     var s = Math.sin(angleInRadians);
 
-    return [c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+    return [
+      c, s, 0, 0, 
+      -s, c, 0, 0, 
+      0, 0, 1, 0, 
+      0, 0, 0, 1
+    ];
   },
 
   scale: function (x, y, z) {
-    return [x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1];
+    return [
+      x, 0, 0, 0, 
+      0, y, 0, 0,
+      0, 0, z, 0, 
+      0, 0, 0, 1
+    ];
   },
 
   /* projection */
   orthographic: function (left, right, bottom, top, near, far) {
-    // TODO
+    return [
+      2 / (right - left), 0, 0, 0,
+      0, 2 / (top - bottom), 0, 0,
+      0, 0, 2 / (near - far), 0, 0,
+      (right + left) / (right - left),
+      (top + bottom) / (top - bottom),
+      (near + far) / (near - far),
+      1,
+    ]
   },
 
   oblique: function (left, right, bottom, top, near, far) {
