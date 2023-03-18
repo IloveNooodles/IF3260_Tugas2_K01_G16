@@ -10,18 +10,23 @@ function setDefaultState() {
     //   vertices: [
     //     [1, 0, 0],
     //     [0, 1, 0],
+    //     [0, 0, 1],
     //     [0, 0, 0],
     //     [1, 1, 0],
     //   ],
-    //   // Faces are 1 index based
-    //   faces: [
-    //     [1, 2, 3],
-    //     [2, 4, 3],
-    //   ],
 
     //   colors: [
-    //     [1, 0.2, 0.1],
+    //     [1, 0.5, 0.2],
     //     [0.4, 1, 1],
+    //     [0.2, 0.5, 1],
+    //     [0.2, 0.5, 1],
+    //   ],
+    //   // Faces are 1 index based
+    //   faces: [
+    //     [0, 2, 3],
+    //     [2, 0, 1],
+    //     [3, 1, 0],
+    //     [1, 3, 2],
     //   ],
     //   normals: [], // not used
     //   uvs: [], // not used
@@ -30,6 +35,13 @@ function setDefaultState() {
       translate: [0, 0, 0], // x, y, z
       rotate: [0, 0, 0], // x, y, z
       scale: [1, 1, 1], // x, y, z
+    },
+    viewMatrix: {
+      camera: [0, 0, 0], // x, y, z
+      lookAt: [0, 0, 0], // x, y, z
+      up: [0, 1, 0], // x, y, z
+      near: 0.1,
+      far: 1000,
     },
     projection: "perspective", // orthographic, oblique, or perspective
     fudgeFactor: 0.0, // perspective projection
@@ -67,6 +79,16 @@ const scaleY = document.getElementById("scale-y");
 const scaleZ = document.getElementById("scale-z");
 
 const rangeFOV = document.getElementById("fov");
+const rangeCameraX = document.getElementById("camera-x");
+const rangeCameraY = document.getElementById("camera-y");
+const rangeCameraZ = document.getElementById("camera-z");
+
+const rangeLookAtX = document.getElementById("look-at-x");
+const rangeLookAtY = document.getElementById("look-at-y");
+const rangeLookAtZ = document.getElementById("look-at-z");
+
+const rangeFar = document.getElementById("far");
+const rangeNear = document.getElementById("near");
 
 /* ======= Event Listener ======= */
 projectionRadio.forEach((radio) => {
@@ -118,11 +140,7 @@ lightingCheckbox.addEventListener("change", () => {
   if (state.lighting) {
     program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d);
   } else {
-    program = createShaderProgram(
-      gl,
-      vertex_shader_3d,
-      fragment_shader_3d_no_lighting
-    );
+    program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d_no_lighting);
   }
   render();
 });
@@ -154,17 +172,18 @@ rangeTranslateZ.addEventListener("input", () => {
 
 /* rotate from -360 to 360 */
 rangeRotateX.addEventListener("input", () => {
-  state.transform.rotate[0] = -1 + (2 * rangeRotateX.value * 2 * Math.PI) / 100;
+  // rotate -360 to 360
+  state.transform.rotate[0] = (2 * rangeRotateX.value * 2 * Math.PI) / 100;
   render();
 });
 
 rangeRotateY.addEventListener("input", () => {
-  state.transform.rotate[1] = -1 + (2 * rangeRotateY.value * 2 * Math.PI) / 100;
+  state.transform.rotate[1] = (2 * rangeRotateY.value * 2 * Math.PI) / 100;
   render();
 });
 
 rangeRotateZ.addEventListener("input", () => {
-  state.transform.rotate[2] = -1 + (2 * rangeRotateZ.value * 2 * Math.PI) / 100;
+  state.transform.rotate[2] = (2 * rangeRotateZ.value * 2 * Math.PI) / 100;
   render();
 });
 
@@ -190,13 +209,49 @@ rangeFOV.addEventListener("input", () => {
   render();
 });
 
+rangeCameraX.addEventListener("input", () => {
+  state.viewMatrix.camera[0] = -1 + (2 * rangeCameraX.value) / 100;
+  render();
+});
+
+rangeCameraY.addEventListener("input", () => {
+  state.viewMatrix.camera[1] = -1 + (2 * rangeCameraY.value) / 100;
+  render();
+});
+
+rangeCameraZ.addEventListener("input", () => {
+  state.viewMatrix.camera[2] = -1 + (2 * rangeCameraZ.value) / 100;
+  render();
+});
+
+rangeLookAtX.addEventListener("input", () => {
+  state.viewMatrix.lookAt[0] = (2 * rangeLookAtX.value * 2 * Math.PI) / 100;
+  render();
+});
+
+rangeLookAtY.addEventListener("input", () => {
+  state.viewMatrix.lookAt[1] = (2 * rangeLookAtY.value * 2 * Math.PI) / 100;
+  render();
+});
+
+rangeLookAtZ.addEventListener("input", () => {
+  state.viewMatrix.lookAt[2] = (2 * rangeLookAtZ.value * 2 * Math.PI) / 100;
+  render();
+});
+
+rangeFar.addEventListener("input", () => {
+  state.viewMatrix.far = rangeFar.value * 0.1;
+  render();
+});
+
+rangeNear.addEventListener("input", () => {
+  state.viewMatrix.near = rangeNear.value * 0.1;
+  render();
+});
+
 /* ======= WebGL Functions ======= */
 const gl = canvas.getContext("webgl");
-var program = createShaderProgram(
-  gl,
-  vertex_shader_3d,
-  fragment_shader_3d_no_lighting
-);
+var program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d_no_lighting);
 
 window.onload = function () {
   if (!gl) {
@@ -223,13 +278,12 @@ function render() {
   gl.enable(gl.DEPTH_TEST);
   gl.useProgram(program);
 
-  /* get all the necessary object */
-  const geometry = setGeometry(gl, state.model, state.lighting);
+  const view = setView(state.viewMatrix.camera, state.viewMatrix.lookAt);
+  const geometry = setGeometry(gl, state.model);
   const transform = setTransform(state.transform);
-  const projection = setProjection(state.projection);
+  const projection = setProjection(state.projection, state.viewMatrix.far, state.viewMatrix.near);
 
-  console.log(state.model);
-  /* get WebGl attribute and location */
+  console.log(state.viewMatrix.far, state.viewMatrix.near);
   var aPosition = gl.getAttribLocation(program, "aPosition");
   gl.enableVertexAttribArray(aPosition);
   gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
@@ -247,7 +301,7 @@ function render() {
   gl.uniformMatrix4fv(transformationMatrix, false, transform);
 
   var uProjectionMatrix = gl.getUniformLocation(program, "uProjectionMatrix");
-  gl.uniformMatrix4fv(uProjectionMatrix, false, projection);
+  gl.uniformMatrix4fv(uProjectionMatrix, false, matrices.multiply(projection, view));
 
   if (state.lighting) {
     var userColor = gl.getUniformLocation(program, "userColor");
@@ -262,6 +316,17 @@ function render() {
   gl.drawElements(gl.TRIANGLES, geometry.numFaces, gl.UNSIGNED_SHORT, 0);
 
   // requestAnimationFrame(render);
+}
+
+function setView(camera, lookAt) {
+  /* Setup view for webgl canvas */
+  // console.log(camera);
+  var cameraMatrix = matrices.translate(camera[0], camera[1], camera[2]);
+  cameraMatrix = matrices.multiply(cameraMatrix, matrices.xRotate(lookAt[0]));
+  cameraMatrix = matrices.multiply(cameraMatrix, matrices.yRotate(lookAt[1]));
+  cameraMatrix = matrices.multiply(cameraMatrix, matrices.zRotate(lookAt[2]));
+  var viewMatrix = matrices.inverse(cameraMatrix);
+  return viewMatrix;
 }
 
 function setGeometry(gl, model) {
@@ -295,35 +360,24 @@ function setColor(gl, model) {
 
 function setTransform(transform) {
   /* Setup transform for webgl canvas */
-  const matrixTranslate = matrices.translate(
+  var matrixTransform = matrices.translate(
     transform.translate[0],
     transform.translate[1],
     transform.translate[2]
   );
-  const matrixXRotate = matrices.multiply(
-    matrixTranslate,
-    matrices.xRotate(transform.rotate[0])
-  );
-  const matrixYRotate = matrices.multiply(
-    matrixXRotate,
-    matrices.yRotate(transform.rotate[1])
-  );
-  const matrixZRotate = matrices.multiply(
-    matrixYRotate,
-    matrices.zRotate(transform.rotate[2])
-  );
-  const matrixScale = matrices.multiply(
-    matrixZRotate,
+  matrixTransform = matrices.multiply(matrixTransform, matrices.xRotate(transform.rotate[0]));
+  matrixTransform = matrices.multiply(matrixTransform, matrices.yRotate(transform.rotate[1]));
+  matrixTransform = matrices.multiply(matrixTransform, matrices.zRotate(transform.rotate[2]));
+  matrixTransform = matrices.multiply(
+    matrixTransform,
     matrices.scale(transform.scale[0], transform.scale[1], transform.scale[2])
   );
-  return matrixScale;
+  return matrixTransform;
 }
 
-function setProjection(projection) {
+function setProjection(projection, far, near) {
   /* Setup projection for webgl canvas */
   const aspect = canvas.width / canvas.height;
-  const near = 0.1;
-  const far = 1000.0;
   const fovy = (Math.PI / 180) * 45;
   const left = 0;
   const top = 0;
