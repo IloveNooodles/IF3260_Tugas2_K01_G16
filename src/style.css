@@ -26,3 +26,13 @@ header {
   display: flex;
   flex-direction: column;
 }
+
+.bottom-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.help-page {
+  margin: 24px;
+}

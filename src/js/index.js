@@ -205,7 +205,7 @@ scaleZ.addEventListener("input", () => {
 
 rangeFOV.addEventListener("input", () => {
   state.fudgeFactor = rangeFOV.value / 100;
-  console.log(state.fudgeFactor);
+  // console.log(state.fudgeFactor);
   render();
 });
 
@@ -291,10 +291,7 @@ function render() {
   var fudgeFactor = gl.getUniformLocation(program, "fudgeFactor");
   gl.uniform1f(fudgeFactor, state.fudgeFactor);
 
-  var transformationMatrix = gl.getUniformLocation(
-    program,
-    "uTransformationMatrix"
-  );
+  var transformationMatrix = gl.getUniformLocation(program, "uTransformationMatrix");
 
   var viewMatrix = gl.getUniformLocation(program, "uViewMatrix");
 
@@ -343,7 +340,7 @@ function setGeometry(gl, model) {
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, faceBuffer);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, faces, gl.STATIC_DRAW);
 
-  console.log(vertices, faces);
+  // console.log(vertices, faces);
   return {
     vertexBuffer,
     faceBuffer,
