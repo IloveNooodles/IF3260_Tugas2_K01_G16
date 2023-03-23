@@ -5,28 +5,28 @@ setDefaultState();
 function setDefaultState() {
   /* Setup default state for webgl canvas */
   state = {
-    model: f,
+    model: cubes,
     // model: {
     //   vertices: [
-    //     [1, 0, 0],
-    //     [0, 1, 0],
-    //     [0, 0, 1],
-    //     [0, 0, 0],
-    //     [1, 1, 0],
+    //     // [1, 0, 0],
+    //     // [0, 1, 0],
+    //     // [0, 0, 1],
+    //     // [0, 0, 0],
+    //     // [1, 1, 0],
     //   ],
 
     //   colors: [
-    //     [1, 0.5, 0.2],
-    //     [0.4, 1, 1],
-    //     [0.2, 0.5, 1],
-    //     [0.2, 0.5, 1],
+    //     // [1, 0.5, 0.2],
+    //     // [0.4, 1, 1],
+    //     // [0.2, 0.5, 1],
+    //     // [0.2, 0.5, 1],
     //   ],
     //   // Faces are 1 index based
     //   faces: [
-    //     [0, 2, 3],
-    //     [2, 0, 1],
-    //     [3, 1, 0],
-    //     [1, 3, 2],
+    //     // [0, 2, 3],
+    //     // [2, 0, 1],
+    //     // [3, 1, 0],
+    //     // [1, 3, 2],
     //   ],
     //   normals: [], // not used
     // },
@@ -421,3 +421,57 @@ function setProjection(projection, far, near) {
     return matrices.perspective(fovy, aspect, near, far);
   }
 }
+
+let vert = [
+  /* === Down edge === */
+  /* front */
+  [-1, -0.2, 1],
+  [1, -0.2, 1],
+  [1, 0.2, 1],
+  [-1, 0.2, 1],
+
+  /* back */
+  [-1, -0.2, 0.75],
+  [1, -0.2, 0.75],
+  [1, 0.2, 0.75],
+  [-1, 0.2, 0.75],
+
+  /* right */
+  [1, 0.2, 1],
+  [1, -0.2, 1],
+  [1, -0.2, 0.75],
+  [1, 0.2, 0.75],
+
+  // /* left */
+  [-1, -0.2, 1],
+  [-1, 0.2, 1],
+  [-1, 0.2, 0.75],
+  [-1, -0.2, 0.75],
+
+  // /* up */
+  [-1, 0.2, 1],
+  [1, 0.2, 1],
+  [1, 0.2, 0.75],
+  [-1, 0.2, 0.75],
+
+  /* down */
+  [-1, -0.2, 1],
+  [1, -0.2, 1],
+  [1, -0.2, 0.75],
+  [-1, -0.2, 0.75],
+];
+
+let len = vert.length / 4;
+console.log(len);
+for (let i = 0; i < len; i++) {
+  let a = vert.slice(i * 4, (i + 1) * 4);
+  console.log(a);
+  b = createSides(state.model, a);
+
+  state.model.vertices.push(...b.vertices);
+  state.model.faces.push(...b.faces);
+  state.model.colors.push(...b.colors);
+  state.model.normals.push(...b.normals);
+}
+
+console.log(state.model);

@@ -39,25 +39,35 @@ function locateCentroid(matrix) {
 /* Isinya 3 array */
 function calculateNormal(array) {
   /* v1: 2 - 1, v2: 3 - 2 */
-  len = array.length;
-  normal = [];
+  let len = array.length;
+  let normal = [];
   for (let i = 0; i < len - 2; i++) {
-    v1 = {
+    let v1 = {
       x: array[i + 1][0] - array[i][0],
       y: array[i + 1][1] - array[i][1],
       z: array[i + 1][2] - array[i][2],
     };
 
-    v2 = {
+    let v2 = {
       x: array[i + 2][0] - array[i + 1][0],
       y: array[i + 2][1] - array[i + 1][1],
       z: array[i + 2][2] - array[i + 1][2],
     };
 
-    cross = [];
+    let cross = [];
     cross.push(v1.y * v2.z - v1.z * v2.y);
     cross.push(v1.z * v2.x - v1.x * v2.z);
     cross.push(v1.x * v2.y - v1.y * v2.x);
+
+    /* Normalize vector */
+    let vectorLen = Math.sqrt(
+      Math.pow(cross[0], 2) + Math.pow(cross[1], 2) + Math.pow(cross[2], 2)
+    );
+
+    for (let j = 0; j < cross.length; j++) {
+      cross[j] = cross[j] / vectorLen;
+    }
+
     if (i == 0) {
       normal.push(cross);
       normal.push(cross);
@@ -73,23 +83,37 @@ function calculateNormal(array) {
 /* will return array vertices, colors, faces, normal */
 /* 1 array will contains minimal 3 vertex */
 function createSides(model, array) {
-  len = model.vertices.length - 1;
-  arrLen = array.length;
+  let arrLen = array.length;
+  let len = model.vertices.length;
   /* Add color */
+  let colors = [];
+  let normals = [];
+  let faces = [];
+  let vertices = [];
+
   for (let i = 0; i < arrLen; i++) {
-    color = Math.random();
-    model.colors.push([color, color, color]);
+    colors.push([Math.random(), Math.random(), Math.random()]);
   }
 
-  model.normal.push();
+  let normal = calculateNormal(array);
+  normals.push(...normal);
 
-  model.vertices.push(...array);
-
+  console.log(normals);
+  // console.log(len);
   /* Create inward faces and outward faces*/
-  for (let i = 0; i < arrLen - 2; ) {
-    model.vertices.push(
+  for (let i = 0; i < arrLen - 2; i++) {
+    faces.push(
       [len + 1, len + 2 + i, len + 3 + i],
       [len + 1, len + 3 + i, len + 2 + i]
     );
   }
+
+  vertices.push(...array);
+
+  return {
+    vertices,
+    faces,
+    colors,
+    normals,
+  };
 }
