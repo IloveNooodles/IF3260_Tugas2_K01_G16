@@ -6,30 +6,6 @@ function setDefaultState() {
   /* Setup default state for webgl canvas */
   state = {
     model: cubes,
-    // model: {
-    //   vertices: [
-    //     // [1, 0, 0],
-    //     // [0, 1, 0],
-    //     // [0, 0, 1],
-    //     // [0, 0, 0],
-    //     // [1, 1, 0],
-    //   ],
-
-    //   colors: [
-    //     // [1, 0.5, 0.2],
-    //     // [0.4, 1, 1],
-    //     // [0.2, 0.5, 1],
-    //     // [0.2, 0.5, 1],
-    //   ],
-    //   // Faces are 1 index based
-    //   faces: [
-    //     // [0, 2, 3],
-    //     // [2, 0, 1],
-    //     // [3, 1, 0],
-    //     // [1, 3, 2],
-    //   ],
-    //   normals: [], // not used
-    // },
     transform: {
       translate: [0, 0, 0], // x, y, z
       rotate: [0, 0, 0], // x, y, z
@@ -45,6 +21,8 @@ function setDefaultState() {
     projection: "perspective", // orthographic, oblique, or perspective
     fudgeFactor: 0.0, // perspective projection
     lighting: false,
+    theta: 15.0, // 15 - 75
+    phi: 75.0, // 15 - 75
     pickedColor: [0.0, 0.0, 0.0], // r, g, b, a
   };
 
@@ -86,6 +64,9 @@ const rangeLookAtZ = document.getElementById("look-at-z");
 
 const rangeFar = document.getElementById("far");
 const rangeNear = document.getElementById("near");
+
+const theta = document.getElementById("theta");
+const phi = document.getElementById("phi");
 
 /* ======= Event Listener ======= */
 projectionRadio.forEach((radio) => {
@@ -255,6 +236,16 @@ rangeNear.addEventListener("input", () => {
   render();
 });
 
+theta.addEventListener("input", () => {
+  state.theta = parseInt(theta.value);
+  render();
+});
+
+phi.addEventListener("input", () => {
+  state.phi = parseInt(phi.value);
+  render();
+});
+
 /* ======= WebGL Functions ======= */
 const gl = canvas.getContext("webgl");
 var program = createShaderProgram(
@@ -294,10 +285,12 @@ function render() {
   const projection = setProjection(
     state.projection,
     state.viewMatrix.far,
-    state.viewMatrix.near
+    state.viewMatrix.near,
+    state.theta,
+    state.phi
   );
 
-  console.log(projection);
+  // console.log(projection);
 
   // console.log(state.viewMatrix.far, state.viewMatrix.near);
   var aPosition = gl.getAttribLocation(program, "aPosition");
@@ -425,7 +418,7 @@ function setTransform(model, transform) {
   return matrixTransform;
 }
 
-function setProjection(projection, far, near) {
+function setProjection(projection, far, near, theta, phi) {
   /* Setup projection for webgl canvas */
   const aspect = canvas.width / canvas.height;
   const fovy = (Math.PI / 180) * 45;
@@ -433,10 +426,9 @@ function setProjection(projection, far, near) {
   const top = 2;
   const right = 2;
   const bottom = -2;
-  const theta = 75;
-  const phi = 75;
-  let nearOrtho = -1000;
-  let farOrtho = 1000;
+  let nearOrtho = near * -10000;
+  let farOrtho = far * 1;
+  console.log(theta, phi, nearOrtho, farOrtho);
 
   if (projection === "orthographic") {
     return matrices.orthographic(left, right, bottom, top, nearOrtho, farOrtho);
