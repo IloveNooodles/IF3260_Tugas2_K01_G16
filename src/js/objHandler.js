@@ -61,4 +61,7 @@ function loadObject(jsonString) {
   return parsedObject;
 }
 
-function saveObject() {}
+function saveObject(model) {
+  saveObject = JSON.stringify(model);
+  return saveObject;
+}

@@ -98,8 +98,6 @@ function createSides(model, array) {
   let normal = calculateNormal(array);
   normals.push(...normal);
 
-  console.log(normals);
-  // console.log(len);
   /* Create inward faces and outward faces*/
   for (let i = 0; i < arrLen - 2; i++) {
     faces.push(
@@ -116,4 +114,17 @@ function createSides(model, array) {
     colors,
     normals,
   };
+}
+
+function create3d(model, vert){
+  let len = vert.length / 4;
+  for (let i = 0; i < len; i++) {
+    let a = vert.slice(i * 4, (i + 1) * 4);
+    let b = createSides(model, a);
+
+    model.vertices.push(...b.vertices);
+    model.faces.push(...b.faces);
+    model.colors.push(...b.colors);
+    model.normals.push(...b.normals);
+  }
 }
