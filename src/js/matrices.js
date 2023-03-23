@@ -196,7 +196,7 @@ var matrices = {
     let t = degToRad(theta);
     let p = degToRad(phi);
 
-    console.log(t, p)
+    // console.log(t, p)
 
     let cotT = -1/Math.tan(t);
     let cotP = -1/Math.tan(p);

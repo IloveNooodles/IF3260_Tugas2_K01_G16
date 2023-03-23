@@ -333,7 +333,7 @@ function render() {
 
 function setView(camera, lookAt) {
   /* Setup view for webgl canvas */
-  // console.log(camera);
+  // console.log(lookAt);
   var cameraMatrix = matrices.translate(camera[0], camera[1], camera[2]);
   cameraMatrix = matrices.multiply(cameraMatrix, matrices.xRotate(lookAt[0]));
   cameraMatrix = matrices.multiply(cameraMatrix, matrices.yRotate(lookAt[1]));
@@ -426,9 +426,9 @@ function setProjection(projection, far, near, theta, phi) {
   const top = 2;
   const right = 2;
   const bottom = -2;
-  let nearOrtho = near * -10000;
   let farOrtho = far * 1;
-  console.log(theta, phi, nearOrtho, farOrtho);
+  let nearOrtho = Math.max(near * -10000, -farOrtho);
+  // console.log(theta, phi, nearOrtho, farOrtho);
 
   if (projection === "orthographic") {
     return matrices.orthographic(left, right, bottom, top, nearOrtho, farOrtho);
