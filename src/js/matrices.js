@@ -111,6 +111,16 @@ var matrices = {
       (a20 * b03 - a21 * b01 + a22 * b00) * invDet,
     ];
   },
+
+  identity: function(){
+    return [
+      1,0,0,0,
+      0,1,0,0,
+      0,0,1,0,
+      0,0,0,1
+    ]
+  },
+
   /* transformation */
   translate: function (x, y, z) {
     return [
@@ -168,14 +178,17 @@ var matrices = {
 
   /* projection */
   orthographic: function (left, right, bottom, top, near, far) {
+    let a = right - left;
+    let b = top - bottom
+    let c = far - near
+    let a2 = right + left
+    let b2 = top + bottom
+    let c2 = far + near
     return [
-      2 / (right - left), 0, 0, 0,
-      0, 2 / (top - bottom), 0, 0,
-      0, 0, 2 / (near - far), 0, 0,
-      (right + left) / (right - left),
-      (top + bottom) / (top - bottom),
-      (near + far) / (near - far),
-      1,
+      2 / a, 0, 0, 0,
+      0, 2 / b, 0, 0,
+      0, 0, -2 / c, 0, 0,
+      -a2 / a, -b2 / b, -c2 / c, 1,
     ]
   },
 

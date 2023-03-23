@@ -16,6 +16,10 @@ function resizeCanvas(canvas) {
   }
 }
 
+function setPrecision(number) {
+  return parseFloat(number.toPrecision(12));
+}
+
 /* matrix is 3d */
 function locateCentroid(matrix) {
   let x = 0;
@@ -23,16 +27,16 @@ function locateCentroid(matrix) {
   let z = 0;
   let vertexCount = matrix.length;
   for (let i = 0; i < vertexCount; i++) {
-    x += matrix[i][0];
-    y += matrix[i][1];
-    z += matrix[i][2];
+    x = setPrecision(matrix[i][0] + x);
+    y = setPrecision(matrix[i][1] + y);
+    z = setPrecision(matrix[i][2] + z);
   }
 
   x = x / vertexCount;
   y = y / vertexCount;
   z = z / vertexCount;
 
-  return { x, y, z };
+  return [x, y, z];
 }
 
 /* Calculate normal vector */
@@ -116,7 +120,7 @@ function createSides(model, array) {
   };
 }
 
-function create3d(model, vert){
+function create3d(model, vert) {
   let len = vert.length / 4;
   for (let i = 0; i < len; i++) {
     let a = vert.slice(i * 4, (i + 1) * 4);

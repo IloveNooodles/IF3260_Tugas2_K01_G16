@@ -292,7 +292,7 @@ function render() {
 
   const view = setView(state.viewMatrix.camera, state.viewMatrix.lookAt);
   const geometry = setGeometry(gl, state.model);
-  const transform = setTransform(state.transform);
+  const transform = setTransform(state.model, state.transform);
   const projection = setProjection(
     state.projection,
     state.viewMatrix.far,
@@ -378,13 +378,27 @@ function setColor(gl, model) {
   gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
 }
 
-function setTransform(transform) {
+function setTransform(model, transform) {
   /* Setup transform for webgl canvas */
-  var matrixTransform = matrices.translate(
-    transform.translate[0],
-    transform.translate[1],
-    transform.translate[2]
+  /* Translate back to center point */
+  let centroid = locateCentroid(model.vertices);
+
+  var matrixTransform = matrices.identity();
+
+  matrixTransform = matrices.multiply(
+    matrixTransform,
+    matrices.translate(
+      transform.translate[0],
+      transform.translate[1],
+      transform.translate[2]
+    )
   );
+
+  matrixTransform = matrices.multiply(
+    matrixTransform,
+    matrices.translate(centroid[0], centroid[1], centroid[2])
+  );
+
   matrixTransform = matrices.multiply(
     matrixTransform,
     matrices.xRotate(transform.rotate[0])
@@ -397,10 +411,17 @@ function setTransform(transform) {
     matrixTransform,
     matrices.zRotate(transform.rotate[2])
   );
+
   matrixTransform = matrices.multiply(
     matrixTransform,
     matrices.scale(transform.scale[0], transform.scale[1], transform.scale[2])
   );
+
+  matrixTransform = matrices.multiply(
+    matrixTransform,
+    matrices.translate(-centroid[0], -centroid[1], -centroid[2])
+  );
+
   return matrixTransform;
 }
 
