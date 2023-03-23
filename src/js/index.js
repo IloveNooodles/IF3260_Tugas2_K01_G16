@@ -29,7 +29,6 @@ function setDefaultState() {
     //     [1, 3, 2],
     //   ],
     //   normals: [], // not used
-    //   uvs: [], // not used
     // },
     transform: {
       translate: [0, 0, 0], // x, y, z
