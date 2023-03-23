@@ -100,13 +100,18 @@ projectionRadio.forEach((radio) => {
 
 modelInput.addEventListener("change", () => {
   const file = modelInput.files[0];
+  if (file.type !== "application/json") {
+    alert("Please upload correct JSON file!");
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = function (e) {
     const text = e.target.result;
     const color = state.pickedColor;
     setDefaultState();
     clear();
-    state.model = objParser(text);
+    state.model = loadObject(text);
     state.pickedColor = color;
     render();
   };
@@ -140,7 +145,11 @@ lightingCheckbox.addEventListener("change", () => {
   if (state.lighting) {
     program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d);
   } else {
-    program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d_no_lighting);
+    program = createShaderProgram(
+      gl,
+      vertex_shader_3d,
+      fragment_shader_3d_no_lighting
+    );
   }
   render();
 });
@@ -251,7 +260,11 @@ rangeNear.addEventListener("input", () => {
 
 /* ======= WebGL Functions ======= */
 const gl = canvas.getContext("webgl");
-var program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d_no_lighting);
+var program = createShaderProgram(
+  gl,
+  vertex_shader_3d,
+  fragment_shader_3d_no_lighting
+);
 
 window.onload = function () {
   if (!gl) {
@@ -281,7 +294,11 @@ function render() {
   const view = setView(state.viewMatrix.camera, state.viewMatrix.lookAt);
   const geometry = setGeometry(gl, state.model);
   const transform = setTransform(state.transform);
-  const projection = setProjection(state.projection, state.viewMatrix.far, state.viewMatrix.near);
+  const projection = setProjection(
+    state.projection,
+    state.viewMatrix.far,
+    state.viewMatrix.near
+  );
 
   console.log(state.viewMatrix.far, state.viewMatrix.near);
   var aPosition = gl.getAttribLocation(program, "aPosition");
@@ -291,14 +308,21 @@ function render() {
   var fudgeFactor = gl.getUniformLocation(program, "fudgeFactor");
   gl.uniform1f(fudgeFactor, state.fudgeFactor);
 
-  var transformationMatrix = gl.getUniformLocation(program, "uTransformationMatrix");
+  var transformationMatrix = gl.getUniformLocation(
+    program,
+    "uTransformationMatrix"
+  );
 
   var viewMatrix = gl.getUniformLocation(program, "uViewMatrix");
 
   gl.uniformMatrix4fv(transformationMatrix, false, transform);
 
   var uProjectionMatrix = gl.getUniformLocation(program, "uProjectionMatrix");
-  gl.uniformMatrix4fv(uProjectionMatrix, false, matrices.multiply(projection, view));
+  gl.uniformMatrix4fv(
+    uProjectionMatrix,
+    false,
+    matrices.multiply(projection, view)
+  );
 
   if (state.lighting) {
     var userColor = gl.getUniformLocation(program, "userColor");
@@ -362,9 +386,18 @@ function setTransform(transform) {
     transform.translate[1],
     transform.translate[2]
   );
-  matrixTransform = matrices.multiply(matrixTransform, matrices.xRotate(transform.rotate[0]));
-  matrixTransform = matrices.multiply(matrixTransform, matrices.yRotate(transform.rotate[1]));
-  matrixTransform = matrices.multiply(matrixTransform, matrices.zRotate(transform.rotate[2]));
+  matrixTransform = matrices.multiply(
+    matrixTransform,
+    matrices.xRotate(transform.rotate[0])
+  );
+  matrixTransform = matrices.multiply(
+    matrixTransform,
+    matrices.yRotate(transform.rotate[1])
+  );
+  matrixTransform = matrices.multiply(
+    matrixTransform,
+    matrices.zRotate(transform.rotate[2])
+  );
   matrixTransform = matrices.multiply(
     matrixTransform,
     matrices.scale(transform.scale[0], transform.scale[1], transform.scale[2])

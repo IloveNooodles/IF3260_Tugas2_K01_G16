@@ -54,3 +54,11 @@ function createObjFile(model) {
   }
   return obj;
 }
+
+/* ======= JSON Handler ======= */
+function loadObject(jsonString) {
+  parsedObject = JSON.parse(jsonString);
+  return parsedObject;
+}
+
+function saveObject() {}
