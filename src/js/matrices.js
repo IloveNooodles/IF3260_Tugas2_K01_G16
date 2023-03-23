@@ -187,13 +187,26 @@ var matrices = {
     return [
       2 / a, 0, 0, 0,
       0, 2 / b, 0, 0,
-      0, 0, -2 / c, 0, 0,
+      0, 0, -2 / c, 0,
       -a2 / a, -b2 / b, -c2 / c, 1,
     ]
   },
 
-  oblique: function (left, right, bottom, top, near, far) {
-    // TODO
+  oblique: function (theta, phi) {
+    let t = degToRad(theta);
+    let p = degToRad(phi);
+
+    console.log(t, p)
+
+    let cotT = -1/Math.tan(t);
+    let cotP = -1/Math.tan(p);
+
+    return [
+      1,0,0,0,
+      0,1,0,0,
+      cotT,cotP,1,0,
+      0,0,0,1
+    ]
   },
 
   perspective: function (fieldOfViewInRadians, aspect, near, far) {

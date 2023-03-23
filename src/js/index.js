@@ -50,8 +50,6 @@ function setDefaultState() {
 
   if (state.projection === "perspective") {
     state.transform.translate[2] = -5 + 100 / 100;
-  } else if (state.projection == "orthographic") {
-    state.transform.translate[2] = -1;
   }
 }
 
@@ -299,6 +297,8 @@ function render() {
     state.viewMatrix.near
   );
 
+  console.log(projection);
+
   // console.log(state.viewMatrix.far, state.viewMatrix.near);
   var aPosition = gl.getAttribLocation(program, "aPosition");
   gl.enableVertexAttribArray(aPosition);
@@ -429,15 +429,22 @@ function setProjection(projection, far, near) {
   /* Setup projection for webgl canvas */
   const aspect = canvas.width / canvas.height;
   const fovy = (Math.PI / 180) * 45;
-  const left = 0;
-  const top = 0;
-  const right = gl.canvas.clientWidth;
-  const bottom = gl.canvas.clientHeight;
+  const left = -2;
+  const top = 2;
+  const right = 2;
+  const bottom = -2;
+  const theta = 75;
+  const phi = 75;
+  let nearOrtho = -1000;
+  let farOrtho = 1000;
 
   if (projection === "orthographic") {
-    return matrices.orthographic(left, right, bottom, top, near, far);
+    return matrices.orthographic(left, right, bottom, top, nearOrtho, farOrtho);
   } else if (projection === "oblique") {
-    // return matrices.oblique(-1, 1, -1, 1, near, far);
+    return matrices.multiply(
+      matrices.oblique(theta, phi),
+      matrices.orthographic(left, right, bottom, top, nearOrtho, farOrtho)
+    );
   } else if (projection === "perspective") {
     return matrices.perspective(fovy, aspect, near, far);
   }
