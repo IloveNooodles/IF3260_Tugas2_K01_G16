@@ -5,7 +5,7 @@ setDefaultState();
 function setDefaultState() {
   /* Setup default state for webgl canvas */
   state = {
-    model: cubes,
+    model: octahedron,
     transform: {
       translate: [0, 0, 0], // x, y, z
       rotate: [0, 0, 0], // x, y, z
@@ -415,19 +415,6 @@ function setProjection(projection, far, near, theta, phi) {
   }
 }
 
-// create3d(state.model, cubesVert);
+// create3d(state.model, octVert);
 
 // console.log(JSON.stringify(state.model));
-
-// let len = vert.length / 4;
-// for (let i = 0; i < len; i++) {
-//   let a = vert.slice(i * 4, (i + 1) * 4);
-//   b = createSides(state.model, a);
-
-//   state.model.vertices.push(...b.vertices);
-//   state.model.faces.push(...b.faces);
-//   state.model.colors.push(...b.colors);
-//   state.model.normals.push(...b.normals);
-// }
-
-// console.log(state.model);
