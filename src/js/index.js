@@ -5,7 +5,8 @@ setDefaultState();
 function setDefaultState() {
   /* Setup default state for webgl canvas */
   state = {
-    model: cubes,
+    // model: cubes,
+    model: emptyModel,
     transform: {
       translate: [0, 0, 0], // x, y, z
       rotate: [0, 0, 0], // x, y, z
@@ -75,7 +76,6 @@ const phi = document.getElementById("phi");
 projectionRadio.forEach((radio) => {
   radio.addEventListener("change", () => {
     state.projection = radio.value;
-    render();
   });
 });
 
@@ -94,7 +94,6 @@ modelInput.addEventListener("change", () => {
     clear();
     state.model = loadObject(text);
     state.pickedColor = color;
-    render();
   };
   reader.readAsText(file);
 });
@@ -125,7 +124,6 @@ colorPicker.addEventListener("change", () => {
     parseInt(color.substring(3, 5), 16) / 255,
     parseInt(color.substring(5, 7), 16) / 255,
   ];
-  render();
 });
 
 lightingCheckbox.addEventListener("change", () => {
@@ -139,14 +137,12 @@ lightingCheckbox.addEventListener("change", () => {
       fragment_shader_3d_no_lighting
     );
   }
-  render();
 });
 
 reset.addEventListener("click", () => {
   setDefaultState();
   modelInput.value = "";
   clear();
-  render();
 });
 
 resetTransform.addEventListener("click", () => {
@@ -157,7 +153,6 @@ resetTransform.addEventListener("click", () => {
     state.transform.translate[2] = -5 + 100 / 100;
   }
   clear();
-  render();
 });
 
 resetCamera.addEventListener("click", () => {
@@ -169,31 +164,26 @@ resetCamera.addEventListener("click", () => {
   state.fudgeFactor = 0.0;
   state.theta = 15.0;
   state.phi = 75.0;
-  render();
 });
 
 startAnim.addEventListener("click", () => {
-  state.isObjectAnimate = true
-  startAnim.classList.add("hidden")
-  stopAnim.classList.remove("hidden")
-  // render();
-})
+  state.isObjectAnimate = true;
+  startAnim.classList.add("hidden");
+  stopAnim.classList.remove("hidden");
+});
 
 stopAnim.addEventListener("click", () => {
-  state.isObjectAnimate = false
-  stopAnim.classList.add("hidden")
-  startAnim.classList.remove("hidden")
-  // render();
-})
+  state.isObjectAnimate = false;
+  stopAnim.classList.add("hidden");
+  startAnim.classList.remove("hidden");
+});
 
 rangeTranslateX.addEventListener("input", () => {
   state.transform.translate[0] = -1 + (2 * rangeTranslateX.value) / 100;
-  render();
 });
 
 rangeTranslateY.addEventListener("input", () => {
   state.transform.translate[1] = -1 + (2 * rangeTranslateY.value) / 100;
-  render();
 });
 
 rangeTranslateZ.addEventListener("input", () => {
@@ -202,86 +192,70 @@ rangeTranslateZ.addEventListener("input", () => {
   } else {
     state.transform.translate[2] = -1 + (2 * rangeTranslateZ.value) / 100;
   }
-  render();
 });
 
 /* rotate from -360 to 360 */
 rangeRotateX.addEventListener("input", () => {
   // rotate -360 to 360
   state.transform.rotate[0] = (2 * rangeRotateX.value * 2 * Math.PI) / 100;
-  render();
 });
 
 rangeRotateY.addEventListener("input", () => {
   state.transform.rotate[1] = (2 * rangeRotateY.value * 2 * Math.PI) / 100;
-  render();
 });
 
 rangeRotateZ.addEventListener("input", () => {
   state.transform.rotate[2] = (2 * rangeRotateZ.value * 2 * Math.PI) / 100;
-  render();
 });
 
 /* scale from -5 to 5 */
 scaleX.addEventListener("input", () => {
   state.transform.scale[0] = scaleX.value / 20;
-  render();
 });
 
 scaleY.addEventListener("input", () => {
   state.transform.scale[1] = scaleY.value / 20;
-  render();
 });
 
 scaleZ.addEventListener("input", () => {
   state.transform.scale[2] = scaleZ.value / 20;
-  render();
 });
 
 rangeFOV.addEventListener("input", () => {
   state.fudgeFactor = rangeFOV.value / 100;
   // console.log(state.fudgeFactor);
-  render();
 });
 
 rangeCameraX.addEventListener("input", () => {
   state.viewMatrix.camera[0] = -1 + (2 * rangeCameraX.value) / 100;
-  render();
 });
 
 rangeCameraY.addEventListener("input", () => {
   state.viewMatrix.camera[1] = -1 + (2 * rangeCameraY.value) / 100;
-  render();
 });
 
 rangeCameraZ.addEventListener("input", () => {
   state.viewMatrix.camera[2] = -1 + (2 * rangeCameraZ.value) / 100;
-  render();
 });
 
 rangeLookAtX.addEventListener("input", () => {
   state.viewMatrix.lookAt[0] = (2 * rangeLookAtX.value * 2 * Math.PI) / 100;
-  render();
 });
 
 rangeLookAtY.addEventListener("input", () => {
   state.viewMatrix.lookAt[1] = (2 * rangeLookAtY.value * 2 * Math.PI) / 100;
-  render();
 });
 
 rangeLookAtZ.addEventListener("input", () => {
   state.viewMatrix.lookAt[2] = (2 * rangeLookAtZ.value * 2 * Math.PI) / 100;
-  render();
 });
 
 theta.addEventListener("input", () => {
   state.theta = parseInt(theta.value);
-  render();
 });
 
 phi.addEventListener("input", () => {
   state.phi = parseInt(phi.value);
-  render();
 });
 
 /* ======= WebGL Functions ======= */
@@ -291,6 +265,19 @@ var program = createShaderProgram(
   vertex_shader_3d,
   fragment_shader_3d_no_lighting
 );
+
+window.requestAnimFrame = (function () {
+  return (
+    window.requestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    window.oRequestAnimationFrame ||
+    window.msRequestAnimationFrame ||
+    function (callback) {
+      window.setTimeout(callback, 1000 / 60);
+    }
+  );
+})();
 
 window.onload = function () {
   if (!gl) {
@@ -327,7 +314,6 @@ function render() {
     state.theta,
     state.phi
   );
-
 
   if (state.isObjectAnimate) {
     state.transform.rotate[0] = (2 * state.degAnimate * 2 * Math.PI) / 100;
@@ -374,7 +360,6 @@ function render() {
     );
 
     normalizeLight = matrices.normalize([0.5, 0.7, 1]);
-    console.log(normalizeLight);
 
     gl.uniform3fv(
       reverseLightDirectionLocation,
@@ -389,7 +374,7 @@ function render() {
 
   gl.drawElements(gl.TRIANGLES, geometry.numFaces, gl.UNSIGNED_SHORT, 0);
 
-  window.requestAnimationFrame(render);
+  window.requestAnimFrame(render);
 }
 
 function setView(camera, lookAt) {
@@ -409,7 +394,6 @@ function setGeometry(gl, model) {
   // all faces are 1 based index. add elements -1 to convert to 0 index
   const faces = new Uint16Array(model.faces.flat(1).map((x) => x - 1));
   const normals = new Float32Array(model.normals.flat(1));
-  console.log(normals);
 
   const vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -518,6 +502,6 @@ function setProjection(projection, far, near, theta, phi) {
   }
 }
 
-// create3d(state.model, octVert);
+create3d(state.model, octVert);
 
-// console.log(JSON.stringify(state.model));
+console.log(JSON.stringify(state.model));

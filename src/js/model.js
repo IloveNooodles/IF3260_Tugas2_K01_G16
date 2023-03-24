@@ -1713,7 +1713,6 @@ var cubesVert = [
   [-0.5, -0.5, 0.75],
 ];
 
-
 var octVert = [
   // /* === Middle Front edge === */
   /* front */
@@ -2110,7 +2109,6 @@ var octVert = [
   [0.5, -0.1, 0],
   [0.3, -0.1, 0],
 ];
-
 
 var octahedron = {
   vertices: [
@@ -3132,3 +3130,10 @@ var octahedron = {
     [0, 1, 0]
   ]
 };
+
+var emptyModel = {
+  vertices: [],
+  colors: [],
+  normals: [],
+  faces:[],
+}

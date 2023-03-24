@@ -67,6 +67,9 @@ function calculateNormal(array) {
     let vectorLen = calculateEulerDistance(cross);
 
     for (let j = 0; j < cross.length; j++) {
+      if (!cross[j]) {
+        cross[j] = 0;
+      }
       cross[j] = cross[j] / vectorLen;
     }
 
@@ -81,7 +84,7 @@ function calculateNormal(array) {
   return normal;
 }
 
-function calculateEulerDistance(cross){
+function calculateEulerDistance(cross) {
   return Math.sqrt(
     Math.pow(cross[0], 2) + Math.pow(cross[1], 2) + Math.pow(cross[2], 2)
   );
