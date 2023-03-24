@@ -2,7 +2,9 @@
 const vertex_shader_3d = `
 attribute vec3 aPosition;
 attribute vec3 aColor;
+attribute vec3 aNormal;
 varying vec4 fragColor;
+varying vec3 vNormal;
 uniform float fudgeFactor;
 uniform mat4 uTransformationMatrix;
 uniform mat4 uViewMatrix;
@@ -18,6 +20,7 @@ void main(void) {
         float zDivider = 1.0 + projectedPos.z * fudgeFactor;
         gl_Position = vec4(projectedPos.xy / zDivider, projectedPos.zw);
     }
+    vNormal = aNormal;
     fragColor = vec4(aColor, 1.0);    
     colorFactor = min(max((1.0 - transformedPos.z) / 2.0, 0.0), 1.0);
 }
@@ -25,11 +28,16 @@ void main(void) {
 
 const fragment_shader_3d = `
 precision mediump float;
+varying vec3 vNormal;
 uniform vec3 userColor;
+uniform vec3 uReverseLightDirection;
 varying float colorFactor;
 
 void main(void) {
+    vec3 normal = normalize(vNormal);
+    float light = dot(normal, uReverseLightDirection);
     gl_FragColor = vec4(userColor * colorFactor, 1.0);
+    gl_FragColor.rgb *= light;
 }
 `;
 

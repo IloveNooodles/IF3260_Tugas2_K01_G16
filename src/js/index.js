@@ -5,7 +5,7 @@ setDefaultState();
 function setDefaultState() {
   /* Setup default state for webgl canvas */
   state = {
-    model: octahedron,
+    model: cubes,
     transform: {
       translate: [0, 0, 0], // x, y, z
       rotate: [0, 0, 0], // x, y, z
@@ -23,7 +23,7 @@ function setDefaultState() {
     lighting: false,
     theta: 15.0, // 15 - 75
     phi: 75.0, // 15 - 75
-    pickedColor: [0.0, 0.0, 0.0], // r, g, b, a
+    pickedColor: [0.2, 1, 0.2], // r, g, b, a
     isObjectAnimate: false,
     degAnimate: 0.1,
   };
@@ -103,7 +103,9 @@ buttonSave.addEventListener("click", () => {
   const transform = setTransform(state.model, state.transform);
   // console.table(transform[1][0]);
   // console.table(state.model.vertices);
-  const appliedtransform = state.model.vertices.map((x) => matrices.applyTransform(transform, x));
+  const appliedtransform = state.model.vertices.map((x) =>
+    matrices.applyTransform(transform, x)
+  );
   // console.table(appliedtransform);
   state.model.vertices = appliedtransform;
   const obj = saveObject(state.model);
@@ -111,7 +113,6 @@ buttonSave.addEventListener("click", () => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  // TODO change this
   link.download = "model.json";
   link.click();
 });
@@ -132,7 +133,11 @@ lightingCheckbox.addEventListener("change", () => {
   if (state.lighting) {
     program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d);
   } else {
-    program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d_no_lighting);
+    program = createShaderProgram(
+      gl,
+      vertex_shader_3d,
+      fragment_shader_3d_no_lighting
+    );
   }
   render();
 });
@@ -281,7 +286,11 @@ phi.addEventListener("input", () => {
 
 /* ======= WebGL Functions ======= */
 const gl = canvas.getContext("webgl");
-var program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d_no_lighting);
+var program = createShaderProgram(
+  gl,
+  vertex_shader_3d,
+  fragment_shader_3d_no_lighting
+);
 
 window.onload = function () {
   if (!gl) {
@@ -328,25 +337,49 @@ function render() {
   // console.log(projection);
 
   // console.log(state.viewMatrix.far, state.viewMatrix.near);
-  var aPosition = gl.getAttribLocation(program, "aPosition");
-  gl.enableVertexAttribArray(aPosition);
-  gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
+  // var aPosition = gl.getAttribLocation(program, "aPosition");
+  // gl.enableVertexAttribArray(aPosition);
+  // gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
 
   var fudgeFactor = gl.getUniformLocation(program, "fudgeFactor");
   gl.uniform1f(fudgeFactor, state.fudgeFactor);
 
-  var transformationMatrix = gl.getUniformLocation(program, "uTransformationMatrix");
+  var transformationMatrix = gl.getUniformLocation(
+    program,
+    "uTransformationMatrix"
+  );
 
   var viewMatrix = gl.getUniformLocation(program, "uViewMatrix");
 
   gl.uniformMatrix4fv(transformationMatrix, false, transform);
 
   var uProjectionMatrix = gl.getUniformLocation(program, "uProjectionMatrix");
-  gl.uniformMatrix4fv(uProjectionMatrix, false, matrices.multiply(projection, view));
+  gl.uniformMatrix4fv(
+    uProjectionMatrix,
+    false,
+    matrices.multiply(projection, view)
+  );
+
+  // var aNormal = gl.getAttribLocation(program, "aNormal");
+  // gl.enableVertexAttribArray(aNormal);
+  // gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 0, 0);
 
   if (state.lighting) {
     var userColor = gl.getUniformLocation(program, "userColor");
     gl.uniform3fv(userColor, state.pickedColor);
+
+    var reverseLightDirectionLocation = gl.getUniformLocation(
+      program,
+      "uReverseLightDirection"
+    );
+
+    normalizeLight = matrices.normalize([0.5, 0.7, 1]);
+    console.log(normalizeLight);
+
+    gl.uniform3fv(
+      reverseLightDirectionLocation,
+      matrices.normalize(normalizeLight)
+    );
   } else {
     setColor(gl, state.model);
     var vertColor = gl.getAttribLocation(program, "aColor");
@@ -375,10 +408,24 @@ function setGeometry(gl, model) {
   const vertices = new Float32Array(model.vertices.flat(1));
   // all faces are 1 based index. add elements -1 to convert to 0 index
   const faces = new Uint16Array(model.faces.flat(1).map((x) => x - 1));
+  const normals = new Float32Array(model.normals.flat(1));
+  console.log(normals);
 
   const vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+  var aPosition = gl.getAttribLocation(program, "aPosition");
+  gl.enableVertexAttribArray(aPosition);
+  gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
+
+  const normalsBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, normalsBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
+
+  var aNormal = gl.getAttribLocation(program, "aNormal");
+  gl.enableVertexAttribArray(aNormal);
+  gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 0, 0);
 
   const faceBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, faceBuffer);
@@ -389,6 +436,7 @@ function setGeometry(gl, model) {
     vertexBuffer,
     faceBuffer,
     numFaces: faces.length,
+    normalsBuffer,
   };
 }
 
@@ -408,7 +456,11 @@ function setTransform(model, transform) {
 
   matrixTransform = matrices.multiply(
     matrixTransform,
-    matrices.translate(transform.translate[0], transform.translate[1], transform.translate[2])
+    matrices.translate(
+      transform.translate[0],
+      transform.translate[1],
+      transform.translate[2]
+    )
   );
 
   matrixTransform = matrices.multiply(
@@ -416,9 +468,18 @@ function setTransform(model, transform) {
     matrices.translate(centroid[0], centroid[1], centroid[2])
   );
 
-  matrixTransform = matrices.multiply(matrixTransform, matrices.xRotate(transform.rotate[0]));
-  matrixTransform = matrices.multiply(matrixTransform, matrices.yRotate(transform.rotate[1]));
-  matrixTransform = matrices.multiply(matrixTransform, matrices.zRotate(transform.rotate[2]));
+  matrixTransform = matrices.multiply(
+    matrixTransform,
+    matrices.xRotate(transform.rotate[0])
+  );
+  matrixTransform = matrices.multiply(
+    matrixTransform,
+    matrices.yRotate(transform.rotate[1])
+  );
+  matrixTransform = matrices.multiply(
+    matrixTransform,
+    matrices.zRotate(transform.rotate[2])
+  );
 
   matrixTransform = matrices.multiply(
     matrixTransform,

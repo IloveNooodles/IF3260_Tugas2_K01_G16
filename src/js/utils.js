@@ -64,9 +64,7 @@ function calculateNormal(array) {
     cross.push(v1.x * v2.y - v1.y * v2.x);
 
     /* Normalize vector */
-    let vectorLen = Math.sqrt(
-      Math.pow(cross[0], 2) + Math.pow(cross[1], 2) + Math.pow(cross[2], 2)
-    );
+    let vectorLen = calculateEulerDistance(cross);
 
     for (let j = 0; j < cross.length; j++) {
       cross[j] = cross[j] / vectorLen;
@@ -81,6 +79,12 @@ function calculateNormal(array) {
     }
   }
   return normal;
+}
+
+function calculateEulerDistance(cross){
+  return Math.sqrt(
+    Math.pow(cross[0], 2) + Math.pow(cross[1], 2) + Math.pow(cross[2], 2)
+  );
 }
 
 /* Will create 1 sides with 2 faces */
