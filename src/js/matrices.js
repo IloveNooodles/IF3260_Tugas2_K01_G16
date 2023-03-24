@@ -55,6 +55,20 @@ var matrices = {
       b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33,
     ];
   },
+
+  /* 1d matrix 1 x 3 */
+  normalize: function (array) {
+    let distance = calculateEulerDistance(array);
+
+    let result = [0, 0, 0];
+
+    for (let j = 0; j < result.length; j++) {
+      result[j] = array[j] / distance;
+    }
+
+    return result;
+  },
+
   inverse: function (a) {
     var a00 = a[0 * 4 + 0];
     var a01 = a[0 * 4 + 1];
@@ -86,7 +100,8 @@ var matrices = {
     var b11 = a22 * a33 - a23 * a32;
 
     // Calculate the determinant
-    var invDet = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+    var invDet =
+      b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
 
     if (!invDet) {
       return null;
@@ -154,7 +169,24 @@ var matrices = {
     let a2 = right + left;
     let b2 = top + bottom;
     let c2 = far + near;
-    return [2 / a, 0, 0, 0, 0, 2 / b, 0, 0, 0, 0, -2 / c, 0, -a2 / a, -b2 / b, -c2 / c, 1];
+    return [
+      2 / a,
+      0,
+      0,
+      0,
+      0,
+      2 / b,
+      0,
+      0,
+      0,
+      0,
+      -2 / c,
+      0,
+      -a2 / a,
+      -b2 / b,
+      -c2 / c,
+      1,
+    ];
   },
 
   oblique: function (theta, phi) {
