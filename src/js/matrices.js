@@ -112,84 +112,49 @@ var matrices = {
     ];
   },
 
-  identity: function(){
-    return [
-      1,0,0,0,
-      0,1,0,0,
-      0,0,1,0,
-      0,0,0,1
-    ]
+  identity: function () {
+    return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
   },
 
   /* transformation */
   translate: function (x, y, z) {
-    return [
-      1, 0, 0, 0, 
-      0, 1, 0, 0, 
-      0, 0, 1, 0, 
-      x, y, z, 1
-    ];
+    return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1];
   },
 
   xRotate: function (angleInRadians) {
     var c = Math.cos(angleInRadians);
     var s = Math.sin(angleInRadians);
 
-    return [
-      1, 0, 0, 0, 
-      0, c, s, 0, 
-      0, -s, c, 0, 
-      0, 0, 0, 1
-    ];
+    return [1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1];
   },
 
   yRotate: function (angleInRadians) {
     var c = Math.cos(angleInRadians);
     var s = Math.sin(angleInRadians);
 
-    return [
-      c, 0, -s, 0, 
-      0, 1, 0, 0, 
-      s, 0, c, 0, 
-      0, 0, 0, 1
-    ];
+    return [c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1];
   },
 
   zRotate: function (angleInRadians) {
     var c = Math.cos(angleInRadians);
     var s = Math.sin(angleInRadians);
 
-    return [
-      c, s, 0, 0, 
-      -s, c, 0, 0, 
-      0, 0, 1, 0, 
-      0, 0, 0, 1
-    ];
+    return [c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
   },
 
   scale: function (x, y, z) {
-    return [
-      x, 0, 0, 0, 
-      0, y, 0, 0,
-      0, 0, z, 0, 
-      0, 0, 0, 1
-    ];
+    return [x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1];
   },
 
   /* projection */
   orthographic: function (left, right, bottom, top, near, far) {
     let a = right - left;
-    let b = top - bottom
-    let c = far - near
-    let a2 = right + left
-    let b2 = top + bottom
-    let c2 = far + near
-    return [
-      2 / a, 0, 0, 0,
-      0, 2 / b, 0, 0,
-      0, 0, -2 / c, 0,
-      -a2 / a, -b2 / b, -c2 / c, 1,
-    ]
+    let b = top - bottom;
+    let c = far - near;
+    let a2 = right + left;
+    let b2 = top + bottom;
+    let c2 = far + near;
+    return [2 / a, 0, 0, 0, 0, 2 / b, 0, 0, 0, 0, -2 / c, 0, -a2 / a, -b2 / b, -c2 / c, 1];
   },
 
   oblique: function (theta, phi) {
@@ -198,15 +163,10 @@ var matrices = {
 
     // console.log(t, p)
 
-    let cotT = -1/Math.tan(t);
-    let cotP = -1/Math.tan(p);
+    let cotT = -1 / Math.tan(t);
+    let cotP = -1 / Math.tan(p);
 
-    return [
-      1,0,0,0,
-      0,1,0,0,
-      cotT,cotP,1,0,
-      0,0,0,1
-    ]
+    return [1, 0, 0, 0, 0, 1, 0, 0, cotT, cotP, 1, 0, 0, 0, 0, 1];
   },
 
   perspective: function (fieldOfViewInRadians, aspect, near, far) {
@@ -231,5 +191,27 @@ var matrices = {
       near * far * rangeInv * 2,
       0,
     ];
+  },
+
+  applyTransform: function (transformMatrix, point) {
+    // apply 4*4 matrix to 4*1 vector
+    console.table(point);
+    let x =
+      transformMatrix[0] * point[0] +
+      transformMatrix[1] * point[1] +
+      transformMatrix[2] * point[2] +
+      transformMatrix[3] * 1;
+    let y =
+      transformMatrix[4] * point[0] +
+      transformMatrix[5] * point[1] +
+      transformMatrix[6] * point[2] +
+      transformMatrix[7] * 1;
+    let z =
+      transformMatrix[8] * point[0] +
+      transformMatrix[9] * point[1] +
+      transformMatrix[10] * point[2] +
+      transformMatrix[11] * 1;
+
+    return [x, y, z];
   },
 };

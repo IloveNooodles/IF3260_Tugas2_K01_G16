@@ -96,13 +96,19 @@ modelInput.addEventListener("change", () => {
 });
 
 buttonSave.addEventListener("click", () => {
-  const obj = createObjFile(state.model);
+  const transform = setTransform(state.model, state.transform);
+  // console.table(transform[1][0]);
+  // console.table(state.model.vertices);
+  const appliedtransform = state.model.vertices.map((x) => matrices.applyTransform(transform, x));
+  // console.table(appliedtransform);
+  state.model.vertices = appliedtransform;
+  const obj = saveObject(state.model);
   const blob = new Blob([obj], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
   // TODO change this
-  link.download = "model.obj";
+  link.download = "model.json";
   link.click();
 });
 
