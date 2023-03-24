@@ -137,6 +137,18 @@ reset.addEventListener("click", () => {
   setDefaultState();
   modelInput.value = "";
   clear();
+  render();
+});
+
+resetTransform.addEventListener("click", () => {
+  state.transform.translate = [0, 0, 0];
+  state.transform.rotate = [0, 0, 0];
+  state.transform.scale = [1, 1, 1];
+  if (state.projection === "perspective") {
+    state.transform.translate[2] = -5 + 100 / 100;
+  }
+  clear();
+  render();
 });
 
 resetCamera.addEventListener("click", () => {
