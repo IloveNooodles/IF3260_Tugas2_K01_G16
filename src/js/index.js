@@ -16,7 +16,7 @@ function setDefaultState() {
       lookAt: [0, 0, 0], // x, y, z
       up: [0, 1, 0], // x, y, z
       near: 0.1,
-      far: 1000,
+      far: 25,
     },
     projection: "perspective", // orthographic, oblique, or perspective
     fudgeFactor: 0.0, // perspective projection
@@ -61,9 +61,6 @@ const rangeCameraZ = document.getElementById("camera-z");
 const rangeLookAtX = document.getElementById("look-at-x");
 const rangeLookAtY = document.getElementById("look-at-y");
 const rangeLookAtZ = document.getElementById("look-at-z");
-
-const rangeFar = document.getElementById("far");
-const rangeNear = document.getElementById("near");
 
 const theta = document.getElementById("theta");
 const phi = document.getElementById("phi");
@@ -223,16 +220,6 @@ rangeLookAtY.addEventListener("input", () => {
 
 rangeLookAtZ.addEventListener("input", () => {
   state.viewMatrix.lookAt[2] = (2 * rangeLookAtZ.value * 2 * Math.PI) / 100;
-  render();
-});
-
-rangeFar.addEventListener("input", () => {
-  state.viewMatrix.far = rangeFar.value * 0.1;
-  render();
-});
-
-rangeNear.addEventListener("input", () => {
-  state.viewMatrix.near = rangeNear.value * 0.1;
   render();
 });
 
