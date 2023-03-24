@@ -36,3 +36,7 @@ header {
 .help-page {
   margin: 24px;
 }
+
+.hidden {
+  display: none;
+}

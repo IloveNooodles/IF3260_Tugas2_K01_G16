@@ -24,6 +24,8 @@ function setDefaultState() {
     theta: 15.0, // 15 - 75
     phi: 75.0, // 15 - 75
     pickedColor: [0.0, 0.0, 0.0], // r, g, b, a
+    isObjectAnimate: false,
+    degAnimate: 0.1,
   };
 
   if (state.projection === "perspective") {
@@ -41,6 +43,8 @@ const lightingCheckbox = document.getElementById("lighting");
 const reset = document.getElementById("reset");
 const resetTransform = document.getElementById("reset-transform");
 const resetCamera = document.getElementById("reset-camera");
+const startAnim = document.getElementById("animation");
+const stopAnim = document.getElementById("stop-anim");
 
 /* ======= Transform Sliders ======= */
 const rangeTranslateX = document.getElementById("translate-x");
@@ -162,6 +166,20 @@ resetCamera.addEventListener("click", () => {
   state.phi = 75.0;
   render();
 });
+
+startAnim.addEventListener("click", () => {
+  state.isObjectAnimate = true
+  startAnim.classList.add("hidden")
+  stopAnim.classList.remove("hidden")
+  // render();
+})
+
+stopAnim.addEventListener("click", () => {
+  state.isObjectAnimate = false
+  stopAnim.classList.add("hidden")
+  startAnim.classList.remove("hidden")
+  // render();
+})
 
 rangeTranslateX.addEventListener("input", () => {
   state.transform.translate[0] = -1 + (2 * rangeTranslateX.value) / 100;
@@ -301,6 +319,12 @@ function render() {
     state.phi
   );
 
+
+  if (state.isObjectAnimate) {
+    state.transform.rotate[0] = (2 * state.degAnimate * 2 * Math.PI) / 100;
+    state.degAnimate += 0.1;
+  }
+
   // console.log(projection);
 
   // console.log(state.viewMatrix.far, state.viewMatrix.near);
@@ -332,7 +356,7 @@ function render() {
 
   gl.drawElements(gl.TRIANGLES, geometry.numFaces, gl.UNSIGNED_SHORT, 0);
 
-  // requestAnimationFrame(render);
+  window.requestAnimationFrame(render);
 }
 
 function setView(camera, lookAt) {
