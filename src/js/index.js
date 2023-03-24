@@ -39,6 +39,8 @@ const buttonSave = document.getElementById("save");
 const colorPicker = document.getElementById("color-picker");
 const lightingCheckbox = document.getElementById("lighting");
 const reset = document.getElementById("reset");
+const resetTransform = document.getElementById("reset-transform");
+const resetCamera = document.getElementById("reset-camera");
 
 /* ======= Transform Sliders ======= */
 const rangeTranslateX = document.getElementById("translate-x");
@@ -120,11 +122,7 @@ lightingCheckbox.addEventListener("change", () => {
   if (state.lighting) {
     program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d);
   } else {
-    program = createShaderProgram(
-      gl,
-      vertex_shader_3d,
-      fragment_shader_3d_no_lighting
-    );
+    program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d_no_lighting);
   }
   render();
 });
@@ -133,6 +131,18 @@ reset.addEventListener("click", () => {
   setDefaultState();
   modelInput.value = "";
   clear();
+});
+
+resetCamera.addEventListener("click", () => {
+  state.viewMatrix.camera = [0, 0, 0];
+  state.viewMatrix.lookAt = [0, 0, 0];
+  state.viewMatrix.up = [0, 1, 0];
+  state.viewMatrix.near = 0.1;
+  state.viewMatrix.far = 25;
+  state.fudgeFactor = 0.0;
+  state.theta = 15.0;
+  state.phi = 75.0;
+  render();
 });
 
 rangeTranslateX.addEventListener("input", () => {
@@ -235,11 +245,7 @@ phi.addEventListener("input", () => {
 
 /* ======= WebGL Functions ======= */
 const gl = canvas.getContext("webgl");
-var program = createShaderProgram(
-  gl,
-  vertex_shader_3d,
-  fragment_shader_3d_no_lighting
-);
+var program = createShaderProgram(gl, vertex_shader_3d, fragment_shader_3d_no_lighting);
 
 window.onload = function () {
   if (!gl) {
@@ -287,21 +293,14 @@ function render() {
   var fudgeFactor = gl.getUniformLocation(program, "fudgeFactor");
   gl.uniform1f(fudgeFactor, state.fudgeFactor);
 
-  var transformationMatrix = gl.getUniformLocation(
-    program,
-    "uTransformationMatrix"
-  );
+  var transformationMatrix = gl.getUniformLocation(program, "uTransformationMatrix");
 
   var viewMatrix = gl.getUniformLocation(program, "uViewMatrix");
 
   gl.uniformMatrix4fv(transformationMatrix, false, transform);
 
   var uProjectionMatrix = gl.getUniformLocation(program, "uProjectionMatrix");
-  gl.uniformMatrix4fv(
-    uProjectionMatrix,
-    false,
-    matrices.multiply(projection, view)
-  );
+  gl.uniformMatrix4fv(uProjectionMatrix, false, matrices.multiply(projection, view));
 
   if (state.lighting) {
     var userColor = gl.getUniformLocation(program, "userColor");
@@ -367,11 +366,7 @@ function setTransform(model, transform) {
 
   matrixTransform = matrices.multiply(
     matrixTransform,
-    matrices.translate(
-      transform.translate[0],
-      transform.translate[1],
-      transform.translate[2]
-    )
+    matrices.translate(transform.translate[0], transform.translate[1], transform.translate[2])
   );
 
   matrixTransform = matrices.multiply(
@@ -379,18 +374,9 @@ function setTransform(model, transform) {
     matrices.translate(centroid[0], centroid[1], centroid[2])
   );
 
-  matrixTransform = matrices.multiply(
-    matrixTransform,
-    matrices.xRotate(transform.rotate[0])
-  );
-  matrixTransform = matrices.multiply(
-    matrixTransform,
-    matrices.yRotate(transform.rotate[1])
-  );
-  matrixTransform = matrices.multiply(
-    matrixTransform,
-    matrices.zRotate(transform.rotate[2])
-  );
+  matrixTransform = matrices.multiply(matrixTransform, matrices.xRotate(transform.rotate[0]));
+  matrixTransform = matrices.multiply(matrixTransform, matrices.yRotate(transform.rotate[1]));
+  matrixTransform = matrices.multiply(matrixTransform, matrices.zRotate(transform.rotate[2]));
 
   matrixTransform = matrices.multiply(
     matrixTransform,
