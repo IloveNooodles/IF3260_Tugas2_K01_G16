@@ -78,6 +78,8 @@ projectionRadio.forEach((radio) => {
     state.projection = radio.value;
     if (state.projection === "perspective") {
       state.transform.translate[2] = -5;
+    } else {
+      state.transform.translate[2] = 0;
     }
   });
 });
