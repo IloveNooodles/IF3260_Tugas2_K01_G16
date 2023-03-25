@@ -258,7 +258,6 @@ var matrices = {
     let zAxis = normalize(subtractVectors(cameraPosition, target));
     let xAxis = normalize(cross(up, zAxis));
     let yAxis = normalize(cross(zAxis, xAxis));
-
     return [
       xAxis[0],
       xAxis[1],

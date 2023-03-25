@@ -18,9 +18,9 @@ function setDefaultState() {
       up: [0, 1, 0], // x, y, z
       near: 0.1,
       far: 50,
-      radius: 0,
+      radius: 1,
     },
-    projection: "orthographic", // orthographic, oblique, or perspective
+    projection: "perspective", // orthographic, oblique, or perspective
     fudgeFactor: 0.0, // perspective projection
     lighting: false,
     theta: 15.0, // 15 - 165
@@ -77,8 +77,6 @@ projectionRadio.forEach((radio) => {
     state.projection = radio.value;
     if (state.projection === "perspective") {
       state.transform.translate[2] = -5;
-    } else {
-      state.transform.translate[2] = 0;
     }
   });
 });
@@ -348,11 +346,7 @@ function render() {
   gl.enable(gl.DEPTH_TEST);
   gl.useProgram(program);
 
-  const view = setView(
-    state.viewMatrix.camera,
-    state.viewMatrix.lookAt,
-    state.viewMatrix.radius
-  );
+  const view = setView(state.viewMatrix);
   const geometry = setGeometry(gl, state.model, view);
   const transform = setTransform(state.model, state.transform);
   const projection = setProjection(
@@ -420,13 +414,31 @@ function render() {
   window.requestAnimFrame(render);
 }
 
-function setView(camera, lookAt, radius = 0) {
+function setView(vm) {
   /* Setup view for webgl canvas */
-  var cameraMatrix = matrices.translate(camera[0], camera[1], radius);
-  cameraMatrix = matrices.multiply(cameraMatrix, matrices.xRotate(lookAt[0]));
-  cameraMatrix = matrices.multiply(cameraMatrix, matrices.yRotate(lookAt[1]));
-  cameraMatrix = matrices.multiply(cameraMatrix, matrices.zRotate(lookAt[2]));
-  var viewMatrix = matrices.inverse(cameraMatrix);
+  var cameraMatrix = matrices.identity();
+  cameraMatrix = matrices.multiply(
+    cameraMatrix,
+    matrices.translate(0, 0, vm.radius)
+  );
+
+  let deg = vm.lookAt.map((x) => degToRad(x));
+  // console.log(deg);
+  cameraMatrix = matrices.multiply(cameraMatrix, matrices.xRotate(deg[0]));
+  cameraMatrix = matrices.multiply(cameraMatrix, matrices.yRotate(deg[1]));
+  cameraMatrix = matrices.multiply(cameraMatrix, matrices.zRotate(deg[2]));
+
+  let cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
+
+  let newCameraMatrix = matrices.lookAt(cameraPosition, [0, 0, 0], vm.up);
+  var viewMatrix = matrices.inverse(newCameraMatrix);
+  // viewMatrix = matrices.translate(0, 0, vm.radius);
+  // console.log(cameraMatrix)
+  // var cameraMatrix = matrices.translate(vm.camera[0], vm.camera[1], vm.radius);
+  // cameraMatrix = matrices.multiply(cameraMatrix, matrices.xRotate(vm.lookAt[0]));
+  // cameraMatrix = matrices.multiply(cameraMatrix, matrices.yRotate(vm.lookAt[1]));
+  // cameraMatrix = matrices.multiply(cameraMatrix, matrices.zRotate(vm.lookAt[2]));
+  // var viewMatrix = matrices.inverse(cameraMatrix);
   return viewMatrix;
 }
 
@@ -529,7 +541,7 @@ function setProjection(projection, far, near, theta, phi) {
   const right = 2;
   const bottom = -2;
   let farOrtho = far * 1;
-  let nearOrtho = Math.max(near * -10000, -farOrtho);
+  let nearOrtho = -farOrtho;
   // console.log(theta, phi, nearOrtho, farOrtho);
 
   if (projection === "orthographic") {

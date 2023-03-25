@@ -158,7 +158,7 @@ function create3d(model, vert) {
   }
 
   model.normals = normals
-  console.log(JSON.stringify(normals))
+  // console.log(JSON.stringify(normals))
 
 }
 
