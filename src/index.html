@@ -15,22 +15,11 @@
         <h1>Tools</h1>
         <h2>Projection</h2>
         <div class="projection" id="projection">
-          <input
-            type="radio"
-            id="orthographic"
-            name="projection"
-            value="orthographic"
-          />
+          <input type="radio" id="orthographic" name="projection" value="orthographic" checked />
           <label for="orthographic">Orthographic</label>
           <input type="radio" id="oblique" name="projection" value="oblique" />
           <label for="oblique">Oblique</label>
-          <input
-            type="radio"
-            id="perspective"
-            name="projection"
-            value="perspective"
-            checked
-          />
+          <input type="radio" id="perspective" name="projection" value="perspective" />
           <label for="perspective">Perspective</label>
         </div>
         <h2>Transform</h2>
@@ -86,11 +75,11 @@
         </div>
         <label for="theta">Theta</label>
         <div class="theta">
-          <input type="range" id="theta" min="15" max="75" value="15" />
+          <input type="range" id="theta" min="15" max="165" value="15" />
         </div>
         <label for="phi">phi</label>
         <div class="phi">
-          <input type="range" id="phi" min="15" max="75" value="75" />
+          <input type="range" id="phi" min="15" max="165" value="75" />
         </div>
         <h2>Utilities</h2>
         <div class="save-load">
@@ -106,9 +95,7 @@
           <input type="checkbox" id="lighting" />
         </div>
         <div class="bottom-buttons">
-          <button id="help" onclick="location.href='help.html'">
-            Show Help
-          </button>
+          <button id="help" onclick="location.href='help.html'">Show Help</button>
           <button id="reset-transform">Reset Transform</button>
           <button id="reset-camera">Reset Camera</button>
           <button id="reset">Reset All</button>
