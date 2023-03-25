@@ -140,22 +140,65 @@ lightingCheckbox.addEventListener("change", () => {
 });
 
 reset.addEventListener("click", () => {
-  setDefaultState();
-  modelInput.value = "";
+  // setDefaultState();
+  
   clear();
+
+  state.projection = "perspective";
+  state.lighting = false;
+  state.pickedColor = [0.2, 1, 0.2];
+  state.isObjectAnimate = false;
+  state.degAnimate = 0.1;
+  // TODO: solve reset projectionRadio, lighting, colorPicker
+  modelInput.value = "";
+  projectionRadio.perspective.value = checked;
+  projectionRadio.orthographic.value = unchecked;
+  projectionRadio.oblique.value = unchecked;
+  lightingCheckbox.checked = false;
+  colorPicker.value = state.pickedColor;
+  stopAnim.classList.add("hidden");
+  startAnim.classList.remove("hidden");
+  
+  program = createShaderProgram(
+    gl,
+    vertex_shader_3d,
+    fragment_shader_3d_no_lighting
+  );
+
+  resetTransf();
+  resetCam();
 });
 
 resetTransform.addEventListener("click", () => {
+  clear();
+  resetTransf();
+});
+
+function resetTransf() {
   state.transform.translate = [0, 0, 0];
   state.transform.rotate = [0, 0, 0];
   state.transform.scale = [1, 1, 1];
   if (state.projection === "perspective") {
     state.transform.translate[2] = -5 + 100 / 100;
   }
-  clear();
-});
+
+  rangeTranslateX.value = 50;
+  rangeTranslateY.value = 50;
+  rangeTranslateZ.value = 50;
+  rangeRotateX.value = 50;
+  rangeRotateY.value = 50;
+  rangeRotateZ.value = 50;
+  scaleX.value = state.transform.scale[0];
+  scaleY.value = state.transform.scale[1];
+  scaleZ.value = state.transform.scale[2];
+}
 
 resetCamera.addEventListener("click", () => {
+  clear();
+  resetCam();  
+});
+
+function resetCam() {
   state.viewMatrix.camera = [0, 0, 0];
   state.viewMatrix.lookAt = [0, 0, 0];
   state.viewMatrix.up = [0, 1, 0];
@@ -164,7 +207,17 @@ resetCamera.addEventListener("click", () => {
   state.fudgeFactor = 0.0;
   state.theta = 15.0;
   state.phi = 75.0;
-});
+
+  rangeCameraX.value = 50;
+  rangeCameraY.value = 50;
+  rangeCameraZ.value = 50;
+  rangeLookAtX.value = 50;
+  rangeLookAtY.value = 50;
+  rangeLookAtZ.value = 50;
+  rangeFOV.value = state.fudgeFactor;
+  theta.value = state.theta;
+  phi.value = state.phi;
+}
 
 startAnim.addEventListener("click", () => {
   state.isObjectAnimate = true;
