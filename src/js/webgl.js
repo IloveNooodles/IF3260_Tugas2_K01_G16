@@ -25,7 +25,7 @@ void main(void) {
         gl_Position = vec4(projectedPos.xy / zDivider, projectedPos.zw);
     }
   
-    vNormal = uNormalMatrix * vec4(aNormal, 1.0);
+    vNormal = uNormalMatrix * vec4(aNormal, 0.0);
     fragColor = vec4(aColor, 1.0);    
     colorFactor = min(max((1.0 - transformedPos.z) / 2.0, 0.0), 1.0);
 }
@@ -43,7 +43,8 @@ uniform vec3 uReverseLightDirection;
 void main(void) {
     float light = max(dot(vNormal.xyz, uReverseLightDirection), 0.0);
     gl_FragColor = vec4(userColor * colorFactor, 1.0);
-    gl_FragColor.rgb *= light;
+    //add the ambience light
+    gl_FragColor.rgb *= (light + vec3(0.25, 0.25, 0.25));
 }
 `;
 
