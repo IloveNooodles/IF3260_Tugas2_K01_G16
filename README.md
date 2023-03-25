@@ -9,14 +9,16 @@ Tugas II Grafika Komputer, 3d Hollow Object using WebGL
 
 ## Fitur
 
-(Penjelasan fitur serta cara penggunaan lengkap ada di [laporan](/doc/IF3260_Laporan-Tubes-2.pdf))
+(Penjelasan fitur serta cara penggunaan lengkap ada di [laporan](/doc/IF3260_Tugas2_K01_G16.pdf))
 
 1. Memuat dan menyimpan model 3D Hollow Object,
 2. Translasi, rotasi, dan dilatasi dengan slider yang disediakan,
 3. Mengubah warna dengan `color picker`,
-4. Mengubah Properti kamera, seperti translasi, rotasi, mengubah FOV, zNear, dan zFar,
+4. Mengubah Properti kamera, seperti translasi, rotasi, mengubah FOV
 5. Mengubah mode lighting antara flat dengan shading,
-6. Mengubah mode proyeksi antara orthographic, oblique, dan perspective,
+6. Mengubah mode proyeksi antara orthographic, oblique, dan perspective
+
+Untuk bantuan menggunakan website dapat menuju halaman `help.html`
 
 ## Anggota Kelompok
 
