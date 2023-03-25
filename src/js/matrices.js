@@ -193,8 +193,6 @@ var matrices = {
     let t = degToRad(theta);
     let p = degToRad(phi);
 
-    // console.log(t, p)
-
     let cotT = -1 / Math.tan(t);
     let cotP = -1 / Math.tan(p);
 
@@ -247,12 +245,37 @@ var matrices = {
     return [x, y, z];
   },
 
-  traspose: function(a){
+  transpose: function(a){
     return [
       a[0], a[4], a[8], a[12],
       a[1], a[5], a[9], a[13],
       a[2], a[6], a[10], a[14],
       a[3], a[7], a[11], a[15],
     ]
+  },
+
+  lookAt: function(cameraPosition, target, up){
+    let zAxis = normalize(subtractVectors(cameraPosition, target));
+    let xAxis = normalize(cross(up, zAxis));
+    let yAxis = normalize(cross(zAxis, xAxis));
+
+    return [
+      xAxis[0],
+      xAxis[1],
+      xAxis[2],
+      0,
+      yAxis[0],
+      yAxis[1],
+      yAxis[2],
+      0,
+      zAxis[0],
+      zAxis[1],
+      zAxis[2],
+      0,
+      cameraPosition[0],
+      cameraPosition[1],
+      cameraPosition[2],
+      1,
+    ];
   },
 };

@@ -73,13 +73,14 @@ function calculateNormal(array) {
       cross[j] = cross[j] / vectorLen;
     }
 
-    if (i == 0) {
-      normal.push(cross);
-      normal.push(cross);
-      normal.push(cross);
-    } else {
-      normal.push(cross);
-    }
+    // if (i == 0) {
+    //   normal.push(cross);
+    //   normal.push(cross);
+    //   normal.push(cross);
+    // } else {
+    //   normal.push(cross);
+    // }
+    normal = cross;
   }
   return normal;
 }
@@ -101,13 +102,11 @@ function createSides(model, array) {
   let normals = [];
   let faces = [];
   let vertices = [];
+  let normals2 = [];
 
   for (let i = 0; i < arrLen; i++) {
     colors.push([Math.random(), Math.random(), Math.random()]);
   }
-
-  let normal = calculateNormal(array);
-  normals.push(...normal);
 
   /* Create inward faces and outward faces*/
   for (let i = 0; i < arrLen - 2; i++) {
@@ -119,11 +118,12 @@ function createSides(model, array) {
 
   vertices.push(...array);
 
+
   return {
     vertices,
     faces,
     colors,
-    normals,
+    // normals,
   };
 }
 
@@ -136,6 +136,51 @@ function create3d(model, vert) {
     model.vertices.push(...b.vertices);
     model.faces.push(...b.faces);
     model.colors.push(...b.colors);
-    model.normals.push(...b.normals);
+    // model.normals.push(...b.normals);
+  }
+
+  len = model.faces.length;
+  let normals = Array(len).fill([]);
+  for (let i = 0; i < len; i++) {
+    let selectedFaces = model.faces[i];
+    selectedFaces = selectedFaces.map((x) => x - 1);
+
+    let a = model.vertices[selectedFaces[0]];
+    let b = model.vertices[selectedFaces[1]];
+    let c = model.vertices[selectedFaces[2]];
+
+    let selectedArr = [a, b, c];
+    let normal = calculateNormal(selectedArr);
+    for (let i = 0; i < 3; i++) {
+      let selectedIndex = selectedFaces[i];
+      normals[selectedIndex] = normal;
+    }
+  }
+
+  model.normals = normals
+  console.log(JSON.stringify(normals))
+
+}
+
+function normalize(v) {
+  let length = calculateEulerDistance(v);
+  if (length > 0.00001) {
+    return [v[0] / length, v[1] / length, v[2] / length];
+  } else {
+    return [0, 0, 0];
   }
 }
+
+function subtractVectors(a, b) {
+  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+
+function cross(a, b) {
+  return [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ];
+}
+
+

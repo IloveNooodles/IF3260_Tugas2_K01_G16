@@ -3,18 +3,21 @@ const vertex_shader_3d = `
 attribute vec3 aPosition;
 attribute vec3 aColor;
 attribute vec3 aNormal;
+
 varying vec4 fragColor;
-varying vec3 vNormal;
+varying vec4 vNormal;
+varying float colorFactor;
+
 uniform float fudgeFactor;
 uniform mat4 uTransformationMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
-varying float colorFactor;
+uniform mat4 uNormalMatrix;
 
 void main(void) {
     vec4 transformedPos = uTransformationMatrix * vec4(aPosition, 1.0);
     vec4 transformedNormal = uTransformationMatrix * vec4(aNormal, 1.0);
-    vec4 projectedPos   = uProjectionMatrix * transformedPos;
+    vec4 projectedPos = uProjectionMatrix * transformedPos;
     if (fudgeFactor < 0.01)
         gl_Position = projectedPos;
     else {
@@ -22,7 +25,7 @@ void main(void) {
         gl_Position = vec4(projectedPos.xy / zDivider, projectedPos.zw);
     }
   
-    vNormal = mat3(uTransformationMatrix) * aNormal;
+    vNormal = uNormalMatrix * vec4(aNormal, 1.0);
     fragColor = vec4(aColor, 1.0);    
     colorFactor = min(max((1.0 - transformedPos.z) / 2.0, 0.0), 1.0);
 }
@@ -30,14 +33,15 @@ void main(void) {
 
 const fragment_shader_3d = `
 precision mediump float;
-varying vec3 vNormal;
-uniform vec3 userColor;
-uniform vec3 uReverseLightDirection;
+
+varying vec4 vNormal;
 varying float colorFactor;
 
+uniform vec3 userColor;
+uniform vec3 uReverseLightDirection;
+
 void main(void) {
-    vec3 normal = normalize(vNormal);
-    float light = max(dot(normal, uReverseLightDirection), 0.0);
+    float light = max(dot(vNormal.xyz, uReverseLightDirection), 0.0);
     gl_FragColor = vec4(userColor * colorFactor, 1.0);
     gl_FragColor.rgb *= light;
 }

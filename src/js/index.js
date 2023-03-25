@@ -5,8 +5,8 @@ setDefaultState();
 function setDefaultState() {
   /* Setup default state for webgl canvas */
   state = {
-    model: octahedron,
-    // model: emptyModel,
+    // model: octahedron,
+    model: emptyModel,
     transform: {
       translate: [0, 0, 0], // x, y, z
       rotate: [0, 0, 0], // x, y, z
@@ -17,14 +17,15 @@ function setDefaultState() {
       lookAt: [0, 0, 0], // x, y, z
       up: [0, 1, 0], // x, y, z
       near: 0.1,
-      far: 25,
+      far: 50,
+      radius: 0,
     },
     projection: "orthographic", // orthographic, oblique, or perspective
     fudgeFactor: 0.0, // perspective projection
     lighting: false,
     theta: 15.0, // 15 - 165
     phi: 75.0, // 15 - 165
-    pickedColor: [0, 0, 0], // r, g, b, a
+    pickedColor: [1, 0, 0], // r, g, b, a
     isObjectAnimate: false,
     degAnimate: 0.1,
   };
@@ -61,9 +62,7 @@ const scaleY = document.getElementById("scale-y");
 const scaleZ = document.getElementById("scale-z");
 
 const rangeFOV = document.getElementById("fov");
-const rangeCameraX = document.getElementById("camera-x");
-const rangeCameraY = document.getElementById("camera-y");
-const rangeCameraZ = document.getElementById("camera-z");
+const radius = document.getElementById("radius");
 
 const rangeLookAtX = document.getElementById("look-at-x");
 const rangeLookAtY = document.getElementById("look-at-y");
@@ -269,16 +268,8 @@ rangeFOV.addEventListener("input", () => {
   // console.log(state.fudgeFactor);
 });
 
-rangeCameraX.addEventListener("input", () => {
-  state.viewMatrix.camera[0] = -1 + (2 * rangeCameraX.value) / 100;
-});
-
-rangeCameraY.addEventListener("input", () => {
-  state.viewMatrix.camera[1] = -1 + (2 * rangeCameraY.value) / 100;
-});
-
-rangeCameraZ.addEventListener("input", () => {
-  state.viewMatrix.camera[2] = -1 + (2 * rangeCameraZ.value) / 100;
+radius.addEventListener("input", () => {
+  state.viewMatrix.radius = parseInt(radius.value);
 });
 
 rangeLookAtX.addEventListener("input", () => {
@@ -323,8 +314,8 @@ window.onload = function () {
     alert("WebGL not supported");
   }
   rangeFOV.value = 0;
-  colorPicker.value = "#000000";
-  state.pickedColor = [0.5, 0.5, 0.5];
+  colorPicker.value = "#FF0000";
+  state.pickedColor = [1, 0, 0];
   render();
 };
 
@@ -343,8 +334,8 @@ function render() {
   gl.enable(gl.DEPTH_TEST);
   gl.useProgram(program);
 
-  const view = setView(state.viewMatrix.camera, state.viewMatrix.lookAt);
-  const geometry = setGeometry(gl, state.model);
+  const view = setView(state.viewMatrix.camera, state.viewMatrix.lookAt, state.viewMatrix.radius);
+  const geometry = setGeometry(gl, state.model, view);
   const transform = setTransform(state.model, state.transform);
   const projection = setProjection(
     state.projection,
@@ -359,28 +350,24 @@ function render() {
     state.degAnimate += 0.1;
   }
 
-  // console.log(projection);
-
-  // console.log(state.viewMatrix.far, state.viewMatrix.near);
-  // var aPosition = gl.getAttribLocation(program, "aPosition");
-  // gl.enableVertexAttribArray(aPosition);
-  // gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
-
   var fudgeFactor = gl.getUniformLocation(program, "fudgeFactor");
   gl.uniform1f(fudgeFactor, state.fudgeFactor);
 
   var transformationMatrix = gl.getUniformLocation(program, "uTransformationMatrix");
-
-  var viewMatrix = gl.getUniformLocation(program, "uViewMatrix");
 
   gl.uniformMatrix4fv(transformationMatrix, false, transform);
 
   var uProjectionMatrix = gl.getUniformLocation(program, "uProjectionMatrix");
   gl.uniformMatrix4fv(uProjectionMatrix, false, matrices.multiply(projection, view));
 
-  // var aNormal = gl.getAttribLocation(program, "aNormal");
-  // gl.enableVertexAttribArray(aNormal);
-  // gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 0, 0);
+  /* Caclulate normal matrix */
+  var normalMatrix = gl.getUniformLocation(program, "uNormalMatrix");
+  let modelViewMatrix = matrices.multiply(view, transform);
+
+  let nMatrix = matrices.inverse(modelViewMatrix);
+  nMatrix = matrices.transpose(nMatrix);
+
+  gl.uniformMatrix4fv(normalMatrix, false, nMatrix);
 
   if (state.lighting) {
     var userColor = gl.getUniformLocation(program, "userColor");
@@ -403,10 +390,9 @@ function render() {
   window.requestAnimFrame(render);
 }
 
-function setView(camera, lookAt) {
+function setView(camera, lookAt, radius = 0) {
   /* Setup view for webgl canvas */
-  // console.log(lookAt);
-  var cameraMatrix = matrices.translate(camera[0], camera[1], camera[2]);
+  var cameraMatrix = matrices.translate(camera[0], camera[1], radius);
   cameraMatrix = matrices.multiply(cameraMatrix, matrices.xRotate(lookAt[0]));
   cameraMatrix = matrices.multiply(cameraMatrix, matrices.yRotate(lookAt[1]));
   cameraMatrix = matrices.multiply(cameraMatrix, matrices.zRotate(lookAt[2]));
@@ -414,7 +400,7 @@ function setView(camera, lookAt) {
   return viewMatrix;
 }
 
-function setGeometry(gl, model) {
+function setGeometry(gl, model, view = []) {
   /* Setup geometry for webgl canvas */
   const vertices = new Float32Array(model.vertices.flat(1));
   // all faces are 1 based index. add elements -1 to convert to 0 index
@@ -515,6 +501,6 @@ function setProjection(projection, far, near, theta, phi) {
   }
 }
 
-// create3d(state.model, octVert);
-
+create3d(state.model, cubesVert);
+console.log(state.model);
 // console.log(JSON.stringify(state.model));
