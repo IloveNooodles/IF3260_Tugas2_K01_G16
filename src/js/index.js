@@ -13,12 +13,11 @@ function setDefaultState() {
       scale: [1, 1, 1], // x, y, z
     },
     viewMatrix: {
-      camera: [0, 0, 0], // x, y, z
+      camera: [0, 0, 1], // x, y, z
       lookAt: [0, 0, 0], // x, y, z
       up: [0, 1, 0], // x, y, z
       near: 0.1,
       far: 50,
-      radius: 1,
     },
     projection: "perspective", // orthographic, oblique, or perspective
     fudgeFactor: 0.0, // perspective projection
@@ -62,7 +61,10 @@ const scaleY = document.getElementById("scale-y");
 const scaleZ = document.getElementById("scale-z");
 
 const rangeFOV = document.getElementById("fov");
-const radius = document.getElementById("radius");
+
+const rangeCameraX = document.getElementById("rangeCameraX");
+const rangeCameraY = document.getElementById("rangeCameraY");
+const rangeCameraZ = document.getElementById("rangeCameraZ");
 
 const rangeLookAtX = document.getElementById("look-at-x");
 const rangeLookAtY = document.getElementById("look-at-y");
@@ -196,18 +198,14 @@ resetCamera.addEventListener("click", () => {
 });
 
 function resetCam() {
-  state.viewMatrix.camera = [0, 0, 0];
+  state.viewMatrix.camera = [0, 0, 1];
   state.viewMatrix.lookAt = [0, 0, 0];
   state.viewMatrix.up = [0, 1, 0];
   state.viewMatrix.near = 0.1;
-  state.viewMatrix.far = 25;
+  state.viewMatrix.far = 50;
   state.fudgeFactor = 0.0;
   state.theta = 15.0;
   state.phi = 75.0;
-
-  rangeCameraX.value = 50;
-  rangeCameraY.value = 50;
-  rangeCameraZ.value = 50;
   rangeLookAtX.value = 50;
   rangeLookAtY.value = 50;
   rangeLookAtZ.value = 50;
@@ -276,8 +274,15 @@ rangeFOV.addEventListener("input", () => {
   // console.log(state.fudgeFactor);
 });
 
-radius.addEventListener("input", () => {
-  state.viewMatrix.radius = parseInt(radius.value);
+rangeCameraX.addEventListener("input", () => {
+  console.log(rangeCameraX.value);
+  state.viewMatrix.camera[0] = parseInt(rangeCameraX.value);
+});
+rangeCameraY.addEventListener("input", () => {
+  state.viewMatrix.camera[1] = parseInt(rangeCameraY.value);
+});
+rangeCameraZ.addEventListener("input", () => {
+  state.viewMatrix.camera[2] = parseInt(rangeCameraZ.value);
 });
 
 rangeLookAtX.addEventListener("input", () => {
@@ -416,29 +421,38 @@ function render() {
 
 function setView(vm) {
   /* Setup view for webgl canvas */
-  var cameraMatrix = matrices.identity();
+  let cameraMatrix = matrices.identity();
+
   cameraMatrix = matrices.multiply(
     cameraMatrix,
-    matrices.translate(0, 0, vm.radius)
+    matrices.xRotate(vm.lookAt[0])
   );
-
-  let deg = vm.lookAt.map((x) => degToRad(x));
-  // console.log(deg);
-  cameraMatrix = matrices.multiply(cameraMatrix, matrices.xRotate(deg[0]));
-  cameraMatrix = matrices.multiply(cameraMatrix, matrices.yRotate(deg[1]));
-  cameraMatrix = matrices.multiply(cameraMatrix, matrices.zRotate(deg[2]));
+  cameraMatrix = matrices.multiply(
+    cameraMatrix,
+    matrices.yRotate(vm.lookAt[1])
+  );
+  cameraMatrix = matrices.multiply(
+    cameraMatrix,
+    matrices.zRotate(vm.lookAt[2])
+  );
+  cameraMatrix = matrices.multiply(
+    cameraMatrix,
+    matrices.translate(vm.camera[0], vm.camera[1], vm.camera[2] * 1.5)
+  );
 
   let cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
 
   let newCameraMatrix = matrices.lookAt(cameraPosition, [0, 0, 0], vm.up);
-  var viewMatrix = matrices.inverse(newCameraMatrix);
-  // viewMatrix = matrices.translate(0, 0, vm.radius);
-  // console.log(cameraMatrix)
-  // var cameraMatrix = matrices.translate(vm.camera[0], vm.camera[1], vm.radius);
-  // cameraMatrix = matrices.multiply(cameraMatrix, matrices.xRotate(vm.lookAt[0]));
-  // cameraMatrix = matrices.multiply(cameraMatrix, matrices.yRotate(vm.lookAt[1]));
-  // cameraMatrix = matrices.multiply(cameraMatrix, matrices.zRotate(vm.lookAt[2]));
-  // var viewMatrix = matrices.inverse(cameraMatrix);
+  let viewMatrix = matrices.inverse(newCameraMatrix);
+  // var cameraMatrix = matrices.translate(
+  //   vm.camera[0],
+  //   vm.camera[1],
+  //   vm.camera[2]
+  // );
+  // cameraMatrix = matricies.multiply(cameraMatrix, matricies.xRotate(vm.lookAt[1]));
+  // cameraMatrix = matricies.multiply(cameraMatrix, matricies.yRotate(vm.lookAt[2]));
+  // cameraMatrix = matricies.multiply(cameraMatrix, matricies.zRotate(vm.lookAt[3]));
+  // var viewMatrix = matricies.inverse(cameraMatrix);
   return viewMatrix;
 }
 
